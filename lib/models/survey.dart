@@ -13,12 +13,22 @@ class Survey {
   final bool isPublished;
   final List<Question> questions;
 
+  // Survey settings
+  final bool allowAnonymousResponses;
+  final bool requireRespondentName;
+  final bool requireRespondentEmail;
+
   const Survey({
     required this.id,
     required this.title,
     required this.description,
     required this.isPublished,
     this.questions = const [],
+
+    // Default settings
+    this.allowAnonymousResponses = true,
+    this.requireRespondentName = false,
+    this.requireRespondentEmail = false,
   });
 
   Survey copyWith({
@@ -27,6 +37,9 @@ class Survey {
     String? description,
     bool? isPublished,
     List<Question>? questions,
+    bool? allowAnonymousResponses,
+    bool? requireRespondentName,
+    bool? requireRespondentEmail,
   }) {
     return Survey(
       id: id ?? this.id,
@@ -34,6 +47,15 @@ class Survey {
       description: description ?? this.description,
       isPublished: isPublished ?? this.isPublished,
       questions: questions ?? this.questions,
+
+      allowAnonymousResponses:
+      allowAnonymousResponses ?? this.allowAnonymousResponses,
+
+      requireRespondentName:
+      requireRespondentName ?? this.requireRespondentName,
+
+      requireRespondentEmail:
+      requireRespondentEmail ?? this.requireRespondentEmail,
     );
   }
 }
