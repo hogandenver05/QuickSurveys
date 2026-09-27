@@ -67,17 +67,36 @@ notifyListeners();
 }
 
 void setAllowAnonymousResponses(bool value) {
-  _allowAnonymousResponses = value;
+  if (value) {
+    _allowAnonymousResponses = true;
+    _requireRespondentName = false;
+    _requireRespondentEmail = false;
+  } else {
+    _allowAnonymousResponses = false;
+  }
+
   notifyListeners();
 }
 
 void setRequireRespondentName(bool value) {
-  _requireRespondentName = value;
+  if (value) {
+    _requireRespondentName = true;
+    _allowAnonymousResponses = false;
+  } else if (!value) {
+    _requireRespondentName = false;
+  }
+
   notifyListeners();
 }
 
 void setRequireRespondentEmail(bool value) {
-  _requireRespondentEmail = value;
+  if (value) {
+    _requireRespondentEmail = true;
+    _allowAnonymousResponses = false;
+  } else if (!value) {
+    _requireRespondentEmail = false;
+  }
+
   notifyListeners();
 }
 

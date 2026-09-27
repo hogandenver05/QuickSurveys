@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../models/survey.dart';
 import '../../repositories/survey_repository.dart';
@@ -75,14 +76,30 @@ class _SurveyBuilderViewState extends State<SurveyBuilderView> {
 
     await showDialog<void>(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
+        final surveyUrl =
+            'https://quicksurveys.app/survey/${_viewModel.savedSurveyId}';
+
         return AlertDialog(
           title: const Text('Survey Published'),
-          content: SelectableText('https://quicksurveys.app/survey/$surveyId'),
+          content: SelectableText(surveyUrl),
           actions: [
+            TextButton.icon(
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: surveyUrl));
+
+                if (dialogContext.mounted) {
+                  ScaffoldMessenger.of(dialogContext).showSnackBar(
+                    const SnackBar(content: Text('Survey link copied.')),
+                  );
+                }
+              },
+              icon: const Icon(Icons.copy),
+              label: const Text('Copy Link'),
+            ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
               },
               child: const Text('Done'),
             ),
@@ -275,7 +292,7 @@ class _SurveyBuilderViewState extends State<SurveyBuilderView> {
                           'Ask respondents to provide their name.',
                         ),
                         value: _viewModel.requireRespondentName,
-                        onChanged: _viewModel.isSaving
+                        onChanged: _viewModel.allowAnonymousResponses
                             ? null
                             : _viewModel.setRequireRespondentName,
                       ),
@@ -287,7 +304,7 @@ class _SurveyBuilderViewState extends State<SurveyBuilderView> {
                           'Ask respondents to provide their email address.',
                         ),
                         value: _viewModel.requireRespondentEmail,
-                        onChanged: _viewModel.isSaving
+                        onChanged: _viewModel.allowAnonymousResponses
                             ? null
                             : _viewModel.setRequireRespondentEmail,
                       ),
