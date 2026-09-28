@@ -11,4 +11,11 @@ class InMemoryResponseRepository implements ResponseRepository {
   Future<void> submitResponse(SurveyResponse response) async {
     _responses.add(response);
   }
+
+  @override
+  Future<List<SurveyResponse>> getResponses(String surveyId) async {
+    return _responses
+        .where((response) => response.surveyId == surveyId)
+        .toList();
+  }
 }

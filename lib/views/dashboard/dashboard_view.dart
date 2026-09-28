@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
 
 import '../../models/survey.dart';
-import '../../repositories/in_memory_response_repository.dart';
+import '../../repositories/response_repository.dart';
 import '../../repositories/survey_repository.dart';
 import '../../viewmodels/dashboard_view_model.dart';
 import '../../viewmodels/survey_response_view_model.dart';
 import '../survey_builder/survey_builder_view.dart';
 import '../survey_response/survey_response_view.dart';
+import '../response_analysis/response_analysis_view.dart';
 
 class DashboardView extends StatefulWidget {
   final SurveyRepository surveyRepository;
+  final ResponseRepository responseRepository;
 
-  const DashboardView({super.key, required this.surveyRepository});
-
+  const DashboardView({
+    super.key,
+    required this.surveyRepository,
+    required this.responseRepository,
+  });
   @override
   State<DashboardView> createState() => _DashboardViewState();
 }
@@ -60,16 +65,26 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   Future<void> _openSurvey(Survey survey) async {
-    final responseRepository = InMemoryResponseRepository();
-
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => SurveyResponseView(
           viewModel: SurveyResponseViewModel(
             surveyRepository: widget.surveyRepository,
-            responseRepository: responseRepository,
+            responseRepository: widget.responseRepository,
             surveyId: survey.id,
           ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _analyzeResponses(Survey survey) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ResponseAnalysisView(
+          surveyRepository: widget.surveyRepository,
+          responseRepository: widget.responseRepository,
+          surveyId: survey.id,
         ),
       ),
     );
@@ -138,6 +153,7 @@ class _DashboardViewState extends State<DashboardView> {
                 onEdit: () => _editSurvey(survey),
                 onDelete: () => _deleteSurvey(survey),
                 onOpen: () => _openSurvey(survey),
+                onAnalyze: () => _analyzeResponses(survey),
               );
             },
           );
@@ -175,12 +191,15 @@ class _SurveyCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onOpen;
+  final VoidCallback onAnalyze;
+
 
   const _SurveyCard({
     required this.survey,
     required this.onEdit,
     required this.onDelete,
     required this.onOpen,
+    required this.onAnalyze,
   });
 
   @override
@@ -204,6 +223,8 @@ class _SurveyCard extends StatelessWidget {
             switch (value) {
               case 'open':
                 onOpen();
+              case 'analyze':
+                onAnalyze();
               case 'edit':
                 onEdit();
               case 'delete':
@@ -215,6 +236,10 @@ class _SurveyCard extends StatelessWidget {
               PopupMenuItem(
                 value: 'open',
                 child: Text('Open Survey'),
+              ),
+              PopupMenuItem(
+                value: 'analyze',
+                child: Text('Analyze Responses'),
               ),
               PopupMenuItem(
                 value: 'edit',

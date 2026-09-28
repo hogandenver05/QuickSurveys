@@ -36,20 +36,27 @@ class _SurveyResponseViewState extends State<SurveyResponseView> {
         }
 
         if (widget.viewModel.submitted) {
-          return const Scaffold(
+          return Scaffold(
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     'Thank you!',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 8),
-                  Text('Your response has been recorded.'),
+                  const SizedBox(height: 8),
+                  const Text('Your response has been recorded.'),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Back to Dashboard'),
+                  ),
                 ],
               ),
             ),
