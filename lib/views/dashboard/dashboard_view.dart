@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../models/survey.dart';
+import '../../repositories/in_memory_response_repository.dart';
 import '../../repositories/survey_repository.dart';
 import '../../viewmodels/dashboard_view_model.dart';
+import '../../viewmodels/survey_response_view_model.dart';
 import '../survey_builder/survey_builder_view.dart';
+import '../survey_response/survey_response_view.dart';
 
 class DashboardView extends StatefulWidget {
   final SurveyRepository surveyRepository;
@@ -54,6 +57,22 @@ class _DashboardViewState extends State<DashboardView> {
     );
 
     await _viewModel.loadSurveys();
+  }
+
+  Future<void> _openSurvey(Survey survey) async {
+    final responseRepository = InMemoryResponseRepository();
+
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SurveyResponseView(
+          viewModel: SurveyResponseViewModel(
+            surveyRepository: widget.surveyRepository,
+            responseRepository: responseRepository,
+            surveyId: survey.id,
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _deleteSurvey(Survey survey) async {
@@ -118,6 +137,7 @@ class _DashboardViewState extends State<DashboardView> {
                 survey: survey,
                 onEdit: () => _editSurvey(survey),
                 onDelete: () => _deleteSurvey(survey),
+                onOpen: () => _openSurvey(survey),
               );
             },
           );
@@ -154,11 +174,13 @@ class _SurveyCard extends StatelessWidget {
   final Survey survey;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback onOpen;
 
   const _SurveyCard({
     required this.survey,
     required this.onEdit,
     required this.onDelete,
+    required this.onOpen,
   });
 
   @override
@@ -180,6 +202,8 @@ class _SurveyCard extends StatelessWidget {
         trailing: PopupMenuButton<String>(
           onSelected: (value) {
             switch (value) {
+              case 'open':
+                onOpen();
               case 'edit':
                 onEdit();
               case 'delete':
@@ -188,8 +212,18 @@ class _SurveyCard extends StatelessWidget {
           },
           itemBuilder: (context) {
             return const [
-              PopupMenuItem(value: 'edit', child: Text('Edit')),
-              PopupMenuItem(value: 'delete', child: Text('Delete')),
+              PopupMenuItem(
+                value: 'open',
+                child: Text('Open Survey'),
+              ),
+              PopupMenuItem(
+                value: 'edit',
+                child: Text('Edit'),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                child: Text('Delete'),
+              ),
             ];
           },
         ),
