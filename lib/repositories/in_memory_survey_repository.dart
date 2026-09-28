@@ -28,7 +28,7 @@ class InMemorySurveyRepository implements SurveyRepository {
   @override
   Future<void> updateSurvey(Survey survey) async {
     final index = _surveys.indexWhere(
-          (existingSurvey) => existingSurvey.id == survey.id,
+      (existingSurvey) => existingSurvey.id == survey.id,
     );
 
     if (index == -1) {

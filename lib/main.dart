@@ -6,20 +6,13 @@ import 'views/dashboard/dashboard_view.dart';
 void main() {
   final surveyRepository = InMemorySurveyRepository();
 
-  runApp(
-    QuickSurveysApp(
-      surveyRepository: surveyRepository,
-    ),
-  );
+  runApp(QuickSurveysApp(surveyRepository: surveyRepository));
 }
 
 class QuickSurveysApp extends StatelessWidget {
   final InMemorySurveyRepository surveyRepository;
 
-  const QuickSurveysApp({
-    super.key,
-    required this.surveyRepository,
-  });
+  const QuickSurveysApp({super.key, required this.surveyRepository});
 
   @override
   Widget build(BuildContext context) {
@@ -27,14 +20,10 @@ class QuickSurveysApp extends StatelessWidget {
       title: 'QuickSurveys',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.indigo,
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
-      home: DashboardView(
-        surveyRepository: surveyRepository,
-      ),
+      home: DashboardView(surveyRepository: surveyRepository),
     );
   }
 }
