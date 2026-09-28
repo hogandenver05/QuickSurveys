@@ -8,10 +8,7 @@ import '../survey_builder/survey_builder_view.dart';
 class DashboardView extends StatefulWidget {
   final SurveyRepository surveyRepository;
 
-  const DashboardView({
-    super.key,
-    required this.surveyRepository,
-  });
+  const DashboardView({super.key, required this.surveyRepository});
 
   @override
   State<DashboardView> createState() => _DashboardViewState();
@@ -24,9 +21,7 @@ class _DashboardViewState extends State<DashboardView> {
   void initState() {
     super.initState();
 
-    _viewModel = DashboardViewModel(
-      surveyRepository: widget.surveyRepository,
-    );
+    _viewModel = DashboardViewModel(surveyRepository: widget.surveyRepository);
 
     _viewModel.loadSurveys();
   }
@@ -40,9 +35,8 @@ class _DashboardViewState extends State<DashboardView> {
   Future<void> _createSurvey() async {
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => SurveyBuilderView(
-          surveyRepository: widget.surveyRepository,
-        ),
+        builder: (_) =>
+            SurveyBuilderView(surveyRepository: widget.surveyRepository),
       ),
     );
 
@@ -68,9 +62,7 @@ class _DashboardViewState extends State<DashboardView> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Delete survey?'),
-          content: Text(
-            'This will permanently delete "${survey.title}".',
-          ),
+          content: Text('This will permanently delete "${survey.title}".'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
@@ -95,9 +87,7 @@ class _DashboardViewState extends State<DashboardView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('QuickSurveys'),
-      ),
+      appBar: AppBar(title: const Text('QuickSurveys')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _createSurvey,
         icon: const Icon(Icons.add),
@@ -107,15 +97,11 @@ class _DashboardViewState extends State<DashboardView> {
         animation: _viewModel,
         builder: (context, _) {
           if (_viewModel.isLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (_viewModel.errorMessage != null) {
-            return Center(
-              child: Text(_viewModel.errorMessage!),
-            );
+            return Center(child: Text(_viewModel.errorMessage!));
           }
 
           if (_viewModel.surveys.isEmpty) {
@@ -150,17 +136,11 @@ class _EmptyDashboard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.assignment_outlined,
-            size: 64,
-          ),
+          Icon(Icons.assignment_outlined, size: 64),
           SizedBox(height: 16),
           Text(
             'No surveys yet',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 8),
           Text('Create your first survey to get started.'),
@@ -189,16 +169,12 @@ class _SurveyCard extends StatelessWidget {
         contentPadding: const EdgeInsets.all(16),
         title: Text(
           survey.title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 8),
           child: Text(
-            survey.description.isEmpty
-                ? 'No description'
-                : survey.description,
+            survey.description.isEmpty ? 'No description' : survey.description,
           ),
         ),
         trailing: PopupMenuButton<String>(
@@ -212,14 +188,8 @@ class _SurveyCard extends StatelessWidget {
           },
           itemBuilder: (context) {
             return const [
-              PopupMenuItem(
-                value: 'edit',
-                child: Text('Edit'),
-              ),
-              PopupMenuItem(
-                value: 'delete',
-                child: Text('Delete'),
-              ),
+              PopupMenuItem(value: 'edit', child: Text('Edit')),
+              PopupMenuItem(value: 'delete', child: Text('Delete')),
             ];
           },
         ),

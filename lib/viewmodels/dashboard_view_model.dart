@@ -6,9 +6,8 @@ import '../repositories/survey_repository.dart';
 class DashboardViewModel extends ChangeNotifier {
   final SurveyRepository _surveyRepository;
 
-  DashboardViewModel({
-    required SurveyRepository surveyRepository,
-  }) : _surveyRepository = surveyRepository;
+  DashboardViewModel({required SurveyRepository surveyRepository})
+    : _surveyRepository = surveyRepository;
 
   List<Survey> _surveys = [];
   bool _isLoading = false;
