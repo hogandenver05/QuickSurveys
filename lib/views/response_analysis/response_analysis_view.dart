@@ -225,7 +225,13 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
       for (var value = question.scaleMin;
       value <= question.scaleMax;
       value++) {
-        counts[value.toString()] = 0;
+        final description = question.scaleLabels[value];
+
+        final label = description == null || description.isEmpty
+            ? value.toString()
+            : '$value — $description';
+
+        counts[label] = 0;
       }
     }
 
@@ -236,7 +242,22 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
           counts[key] = (counts[key] ?? 0) + 1;
         }
       } else {
-        final key = answer.toString();
+        String key;
+
+        if (question.type == QuestionType.linearScale) {
+          final value = int.tryParse(answer.toString());
+          final description =
+          value == null ? null : question.scaleLabels[value];
+
+          key = value != null &&
+              description != null &&
+              description.isNotEmpty
+              ? '$value — $description'
+              : answer.toString();
+        } else {
+          key = answer.toString();
+        }
+
         counts[key] = (counts[key] ?? 0) + 1;
       }
     }
@@ -320,8 +341,18 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
             title: Text(
               _respondentTitle(response),
             ),
-            subtitle: Text(
-              _formatDate(response.submittedAt),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _formatDate(response.submittedAt),
+                ),
+                if (response.respondentEmail != null &&
+                    response.respondentEmail!.trim().isNotEmpty)
+                  Text(
+                    response.respondentEmail!,
+                  ),
+              ],
             ),
             children: [
               Padding(
@@ -346,7 +377,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
                           Text(
                             answer == null
                                 ? 'No answer'
-                                : _formatAnswer(answer),
+                                : _formatAnswer(question, answer),
                           ),
                         ],
                       ),
@@ -375,7 +406,19 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
     return 'Anonymous respondent';
   }
 
-  String _formatAnswer(dynamic answer) {
+  String _formatAnswer(Question question, dynamic answer) {
+    if (answer == null) {
+      return 'No answer';
+    }
+
+    if (question.type == QuestionType.linearScale && answer is int) {
+      final label = question.scaleLabels[answer];
+
+      if (label != null && label.isNotEmpty) {
+        return '$answer — $label';
+      }
+    }
+
     if (answer is List) {
       return answer.join(', ');
     }

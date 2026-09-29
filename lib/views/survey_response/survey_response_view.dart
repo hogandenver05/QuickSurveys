@@ -318,46 +318,55 @@ class _SurveyResponseViewState extends State<SurveyResponseView> {
         final selected =
         widget.viewModel.answers[question.id] as int?;
 
+        final scaleValues = [
+          for (
+          var value = question.scaleMin;
+          value <= question.scaleMax;
+          value++
+          )
+            value,
+        ];
+
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  question.scaleMinLabel.isEmpty
-                      ? question.scaleMin.toString()
-                      : question.scaleMinLabel,
-                ),
-                Text(
-                  question.scaleMaxLabel.isEmpty
-                      ? question.scaleMax.toString()
-                      : question.scaleMaxLabel,
-                ),
-              ],
-            ),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: scaleValues.map((value) {
+                final label = question.scaleLabels[value] ?? '';
 
-            const SizedBox(height: 8),
-
-            Wrap(
-              spacing: 8,
-              children: [
-                for (
-                var value = question.scaleMin;
-                value <= question.scaleMax;
-                value++
-                )
-                  ChoiceChip(
-                    label: Text(value.toString()),
-                    selected: selected == value,
-                    onSelected: (_) {
-                      widget.viewModel.setAnswer(
-                        question.id,
-                        value,
-                      );
-                    },
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 40,
+                          child: Center(
+                            child: Text(
+                              label,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        ChoiceChip(
+                          label: Text(value.toString()),
+                          selected: selected == value,
+                          onSelected: (_) {
+                            widget.viewModel.setAnswer(
+                              question.id,
+                              value,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-              ],
+                );
+              }).toList(),
             ),
           ],
         );
