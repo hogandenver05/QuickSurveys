@@ -18,8 +18,7 @@ class ResponseAnalysisView extends StatefulWidget {
   });
 
   @override
-  State<ResponseAnalysisView> createState() =>
-      _ResponseAnalysisViewState();
+  State<ResponseAnalysisView> createState() => _ResponseAnalysisViewState();
 }
 
 class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
@@ -51,20 +50,14 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
       builder: (context, _) {
         if (_viewModel.isLoading) {
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
+            body: Center(child: CircularProgressIndicator()),
           );
         }
 
         if (_viewModel.errorMessage != null) {
           return Scaffold(
-            appBar: AppBar(
-              title: const Text('Response Analysis'),
-            ),
-            body: Center(
-              child: Text(_viewModel.errorMessage!),
-            ),
+            appBar: AppBar(title: const Text('Response Analysis')),
+            body: Center(child: Text(_viewModel.errorMessage!)),
           );
         }
 
@@ -72,12 +65,8 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
 
         if (survey == null) {
           return Scaffold(
-            appBar: AppBar(
-              title: const Text('Response Analysis'),
-            ),
-            body: const Center(
-              child: Text('Survey not found.'),
-            ),
+            appBar: AppBar(title: const Text('Response Analysis')),
+            body: const Center(child: Text('Survey not found.')),
           );
         }
 
@@ -117,10 +106,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
               children: [
                 const Text(
                   'Responses',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -137,10 +123,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
         const SizedBox(height: 24),
         const Text(
           'Question Responses',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         ...survey.questions.map(_buildQuestionSummary),
@@ -170,10 +153,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
     return const SizedBox.shrink();
   }
 
-  Widget _buildOpenEndedQuestion(
-      Question question,
-      List<dynamic> answers,
-      ) {
+  Widget _buildOpenEndedQuestion(Question question, List<dynamic> answers) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
@@ -183,23 +163,19 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
           children: [
             Text(
               question.text,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             if (answers.isEmpty)
               const Text('No responses yet.')
             else
               ...answers.map(
-                    (answer) => Container(
+                (answer) => Container(
                   width: double.infinity,
                   margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Theme.of(context).dividerColor,
-                    ),
+                    border: Border.all(color: Theme.of(context).dividerColor),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(answer.toString()),
@@ -211,10 +187,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
     );
   }
 
-  Widget _buildChoiceChart(
-      Question question,
-      List<dynamic> answers,
-      ) {
+  Widget _buildChoiceChart(Question question, List<dynamic> answers) {
     final counts = <String, int>{};
 
     for (final option in question.options) {
@@ -222,9 +195,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
     }
 
     if (question.type == QuestionType.linearScale) {
-      for (var value = question.scaleMin;
-      value <= question.scaleMax;
-      value++) {
+      for (var value = question.scaleMin; value <= question.scaleMax; value++) {
         final description = question.scaleLabels[value];
 
         final label = description == null || description.isEmpty
@@ -246,12 +217,11 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
 
         if (question.type == QuestionType.linearScale) {
           final value = int.tryParse(answer.toString());
-          final description =
-          value == null ? null : question.scaleLabels[value];
+          final description = value == null
+              ? null
+              : question.scaleLabels[value];
 
-          key = value != null &&
-              description != null &&
-              description.isNotEmpty
+          key = value != null && description != null && description.isNotEmpty
               ? '$value — $description'
               : answer.toString();
         } else {
@@ -264,9 +234,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
 
     final maxCount = counts.values.isEmpty
         ? 1
-        : counts.values.reduce(
-          (a, b) => a > b ? a : b,
-    );
+        : counts.values.reduce((a, b) => a > b ? a : b);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -277,39 +245,30 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
           children: [
             Text(
               question.text,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             if (counts.isEmpty)
               const Text('No responses yet.')
             else
               ...counts.entries.map(
-                    (entry) => Padding(
+                (entry) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        mainAxisAlignment:
-                        MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(
-                            child: Text(entry.key),
-                          ),
+                          Expanded(child: Text(entry.key)),
                           Text(
                             '${entry.value}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
                       const SizedBox(height: 4),
-                      LinearProgressIndicator(
-                        value: entry.value / maxCount,
-                      ),
+                      LinearProgressIndicator(value: entry.value / maxCount),
                     ],
                   ),
                 ),
@@ -324,9 +283,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
     final responses = _viewModel.responses;
 
     if (responses.isEmpty) {
-      return const Center(
-        child: Text('No responses yet.'),
-      );
+      return const Center(child: Text('No responses yet.'));
     }
 
     return ListView.builder(
@@ -338,20 +295,14 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
           child: ExpansionTile(
-            title: Text(
-              _respondentTitle(response),
-            ),
+            title: Text(_respondentTitle(response)),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  _formatDate(response.submittedAt),
-                ),
+                Text(_formatDate(response.submittedAt)),
                 if (response.respondentEmail != null &&
                     response.respondentEmail!.trim().isNotEmpty)
-                  Text(
-                    response.respondentEmail!,
-                  ),
+                  Text(response.respondentEmail!),
               ],
             ),
             children: [
@@ -369,9 +320,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
                         children: [
                           Text(
                             question.text,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 4),
                           Text(

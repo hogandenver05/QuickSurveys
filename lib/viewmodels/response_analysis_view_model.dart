@@ -14,9 +14,9 @@ class ResponseAnalysisViewModel extends ChangeNotifier {
     required SurveyRepository surveyRepository,
     required ResponseRepository responseRepository,
     required String surveyId,
-  })  : _surveyRepository = surveyRepository,
-        _responseRepository = responseRepository,
-        _surveyId = surveyId;
+  }) : _surveyRepository = surveyRepository,
+       _responseRepository = responseRepository,
+       _surveyId = surveyId;
 
   Survey? _survey;
   List<SurveyResponse> _responses = [];
@@ -26,8 +26,7 @@ class ResponseAnalysisViewModel extends ChangeNotifier {
 
   Survey? get survey => _survey;
 
-  List<SurveyResponse> get responses =>
-      List.unmodifiable(_responses);
+  List<SurveyResponse> get responses => List.unmodifiable(_responses);
 
   int get responseCount => _responses.length;
 

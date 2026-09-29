@@ -241,7 +241,7 @@ class _SurveyBuilderViewState extends State<SurveyBuilderView> {
                               onPressed: _viewModel.isSaving
                                   ? null
                                   : () =>
-                                  _showEditQuestionDialog(context, index),
+                                        _showEditQuestionDialog(context, index),
                             ),
                             IconButton(
                               tooltip: 'Delete question',
@@ -447,7 +447,7 @@ class _QuestionDialogState extends State<_QuestionDialog> {
     for (final value in values) {
       _scaleLabelControllers.putIfAbsent(
         value,
-            () => TextEditingController(text: initialLabels[value] ?? ''),
+        () => TextEditingController(text: initialLabels[value] ?? ''),
       );
     }
 
@@ -534,15 +534,15 @@ class _QuestionDialogState extends State<_QuestionDialog> {
                       border: const OutlineInputBorder(),
                       suffixIcon: _optionControllers.length > 2
                           ? IconButton(
-                        icon: const Icon(Icons.remove_circle_outline),
-                        onPressed: () {
-                          setState(() {
-                            final controller = _optionControllers
-                                .removeAt(index);
-                            controller.dispose();
-                          });
-                        },
-                      )
+                              icon: const Icon(Icons.remove_circle_outline),
+                              onPressed: () {
+                                setState(() {
+                                  final controller = _optionControllers
+                                      .removeAt(index);
+                                  controller.dispose();
+                                });
+                              },
+                            )
                           : null,
                     ),
                   ),
@@ -676,9 +676,9 @@ class _QuestionDialogState extends State<_QuestionDialog> {
 
     final options = _hasOptions
         ? _optionControllers
-        .map((controller) => controller.text.trim())
-        .where((option) => option.isNotEmpty)
-        .toList()
+              .map((controller) => controller.text.trim())
+              .where((option) => option.isNotEmpty)
+              .toList()
         : <String>[];
 
     if (_hasOptions && options.length < 2) {
@@ -709,7 +709,11 @@ class _QuestionDialogState extends State<_QuestionDialog> {
         final label = _scaleLabelControllers[value]?.text.trim() ?? '';
         if (label.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Please provide a description for scale value $value.')),
+            SnackBar(
+              content: Text(
+                'Please provide a description for scale value $value.',
+              ),
+            ),
           );
           return;
         }
@@ -719,7 +723,7 @@ class _QuestionDialogState extends State<_QuestionDialog> {
 
     final question = Question(
       id:
-      widget.existingQuestion?.id ??
+          widget.existingQuestion?.id ??
           DateTime.now().microsecondsSinceEpoch.toString(),
       text: text,
       type: _type,

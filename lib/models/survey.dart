@@ -49,13 +49,13 @@ class Survey {
       questions: questions ?? this.questions,
 
       allowAnonymousResponses:
-      allowAnonymousResponses ?? this.allowAnonymousResponses,
+          allowAnonymousResponses ?? this.allowAnonymousResponses,
 
       requireRespondentName:
-      requireRespondentName ?? this.requireRespondentName,
+          requireRespondentName ?? this.requireRespondentName,
 
       requireRespondentEmail:
-      requireRespondentEmail ?? this.requireRespondentEmail,
+          requireRespondentEmail ?? this.requireRespondentEmail,
     );
   }
 }

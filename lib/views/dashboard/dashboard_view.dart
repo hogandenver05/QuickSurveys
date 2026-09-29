@@ -193,7 +193,6 @@ class _SurveyCard extends StatelessWidget {
   final VoidCallback onOpen;
   final VoidCallback onAnalyze;
 
-
   const _SurveyCard({
     required this.survey,
     required this.onEdit,
@@ -233,22 +232,10 @@ class _SurveyCard extends StatelessWidget {
           },
           itemBuilder: (context) {
             return const [
-              PopupMenuItem(
-                value: 'open',
-                child: Text('Open Survey'),
-              ),
-              PopupMenuItem(
-                value: 'analyze',
-                child: Text('Analyze Responses'),
-              ),
-              PopupMenuItem(
-                value: 'edit',
-                child: Text('Edit'),
-              ),
-              PopupMenuItem(
-                value: 'delete',
-                child: Text('Delete'),
-              ),
+              PopupMenuItem(value: 'open', child: Text('Open Survey')),
+              PopupMenuItem(value: 'analyze', child: Text('Analyze Responses')),
+              PopupMenuItem(value: 'edit', child: Text('Edit')),
+              PopupMenuItem(value: 'delete', child: Text('Delete')),
             ];
           },
         ),
