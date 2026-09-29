@@ -6,10 +6,7 @@ import '../../viewmodels/survey_response_view_model.dart';
 class SurveyResponseView extends StatefulWidget {
   final SurveyResponseViewModel viewModel;
 
-  const SurveyResponseView({
-    super.key,
-    required this.viewModel,
-  });
+  const SurveyResponseView({super.key, required this.viewModel});
 
   @override
   State<SurveyResponseView> createState() => _SurveyResponseViewState();
@@ -29,27 +26,29 @@ class _SurveyResponseViewState extends State<SurveyResponseView> {
       builder: (context, _) {
         if (widget.viewModel.isLoading) {
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
+            body: Center(child: CircularProgressIndicator()),
           );
         }
 
         if (widget.viewModel.submitted) {
-          return const Scaffold(
+          return Scaffold(
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     'Thank you!',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 8),
-                  Text('Your response has been recorded.'),
+                  const SizedBox(height: 8),
+                  const Text('Your response has been recorded.'),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Back to Dashboard'),
+                  ),
                 ],
               ),
             ),
@@ -60,29 +59,22 @@ class _SurveyResponseViewState extends State<SurveyResponseView> {
 
         if (survey == null) {
           return Scaffold(
-            appBar: AppBar(
-              title: const Text('Survey'),
-            ),
+            appBar: AppBar(title: const Text('Survey')),
             body: Center(
               child: Text(
-                widget.viewModel.errorMessage ??
-                    'This survey is unavailable.',
+                widget.viewModel.errorMessage ?? 'This survey is unavailable.',
               ),
             ),
           );
         }
 
         return Scaffold(
-          appBar: AppBar(
-            title: Text(survey.title),
-          ),
+          appBar: AppBar(title: Text(survey.title)),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 700,
-                ),
+                constraints: const BoxConstraints(maxWidth: 700),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -101,27 +93,20 @@ class _SurveyResponseViewState extends State<SurveyResponseView> {
 
                     const SizedBox(height: 24),
 
-                    if (survey.requireRespondentName)
-                      _buildNameField(),
+                    if (survey.requireRespondentName) _buildNameField(),
 
-                    if (survey.requireRespondentEmail)
-                      _buildEmailField(),
+                    if (survey.requireRespondentEmail) _buildEmailField(),
 
                     if (survey.requireRespondentName ||
                         survey.requireRespondentEmail)
                       const SizedBox(height: 16),
 
-                    ...survey.questions.asMap().entries.map(
-                          (entry) {
-                        final index = entry.key;
-                        final question = entry.value;
+                    ...survey.questions.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final question = entry.value;
 
-                        return _buildQuestion(
-                          question,
-                          index,
-                        );
-                      },
-                    ),
+                      return _buildQuestion(question, index);
+                    }),
 
                     if (widget.viewModel.errorMessage != null) ...[
                       const SizedBox(height: 16),
@@ -141,16 +126,16 @@ class _SurveyResponseViewState extends State<SurveyResponseView> {
                         onPressed: widget.viewModel.isSubmitting
                             ? null
                             : () async {
-                          await widget.viewModel.submit();
-                        },
+                                await widget.viewModel.submit();
+                              },
                         child: widget.viewModel.isSubmitting
                             ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                          ),
-                        )
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
                             : const Text('Submit Response'),
                       ),
                     ),
@@ -191,10 +176,7 @@ class _SurveyResponseViewState extends State<SurveyResponseView> {
     );
   }
 
-  Widget _buildQuestion(
-      Question question,
-      int index,
-      ) {
+  Widget _buildQuestion(Question question, int index) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
@@ -204,10 +186,7 @@ class _SurveyResponseViewState extends State<SurveyResponseView> {
           children: [
             Text(
               '${index + 1}. ${question.text}',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
 
             if (question.isRequired)
@@ -215,10 +194,7 @@ class _SurveyResponseViewState extends State<SurveyResponseView> {
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
                   'Required',
-                  style: TextStyle(
-                    color: Colors.red.shade700,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: Colors.red.shade700, fontSize: 12),
                 ),
               ),
 
@@ -258,8 +234,7 @@ class _SurveyResponseViewState extends State<SurveyResponseView> {
         );
 
       case QuestionType.multipleChoice:
-        final selected =
-        widget.viewModel.answers[question.id] as String?;
+        final selected = widget.viewModel.answers[question.id] as String?;
 
         return Column(
           children: question.options.map((option) {
@@ -270,10 +245,7 @@ class _SurveyResponseViewState extends State<SurveyResponseView> {
               contentPadding: EdgeInsets.zero,
               onChanged: (value) {
                 if (value != null) {
-                  widget.viewModel.setAnswer(
-                    question.id,
-                    value,
-                  );
+                  widget.viewModel.setAnswer(question.id, value);
                 }
               },
             );
@@ -298,59 +270,61 @@ class _SurveyResponseViewState extends State<SurveyResponseView> {
                   selected.remove(option);
                 }
 
-                widget.viewModel.setAnswer(
-                  question.id,
-                  selected,
-                );
+                widget.viewModel.setAnswer(question.id, selected);
               },
             );
           }).toList(),
         );
 
       case QuestionType.linearScale:
-        final selected =
-        widget.viewModel.answers[question.id] as int?;
+        final selected = widget.viewModel.answers[question.id] as int?;
+
+        final scaleValues = [
+          for (
+            var value = question.scaleMin;
+            value <= question.scaleMax;
+            value++
+          )
+            value,
+        ];
 
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  question.scaleMinLabel.isEmpty
-                      ? question.scaleMin.toString()
-                      : question.scaleMinLabel,
-                ),
-                Text(
-                  question.scaleMaxLabel.isEmpty
-                      ? question.scaleMax.toString()
-                      : question.scaleMaxLabel,
-                ),
-              ],
-            ),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: scaleValues.map((value) {
+                final label = question.scaleLabels[value] ?? '';
 
-            const SizedBox(height: 8),
-
-            Wrap(
-              spacing: 8,
-              children: [
-                for (
-                var value = question.scaleMin;
-                value <= question.scaleMax;
-                value++
-                )
-                  ChoiceChip(
-                    label: Text(value.toString()),
-                    selected: selected == value,
-                    onSelected: (_) {
-                      widget.viewModel.setAnswer(
-                        question.id,
-                        value,
-                      );
-                    },
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 40,
+                          child: Center(
+                            child: Text(
+                              label,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        ChoiceChip(
+                          label: Text(value.toString()),
+                          selected: selected == value,
+                          onSelected: (_) {
+                            widget.viewModel.setAnswer(question.id, value);
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-              ],
+                );
+              }).toList(),
             ),
           ],
         );

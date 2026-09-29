@@ -371,11 +371,7 @@ class _QuestionDialogState extends State<_QuestionDialog> {
     text: '5',
   );
 
-  final TextEditingController _scaleMinLabelController =
-      TextEditingController();
-
-  final TextEditingController _scaleMaxLabelController =
-      TextEditingController();
+  final Map<int, TextEditingController> _scaleLabelControllers = {};
 
   bool get _hasOptions =>
       _type == QuestionType.multipleChoice || _type == QuestionType.checkboxes;
@@ -412,9 +408,9 @@ class _QuestionDialogState extends State<_QuestionDialog> {
     if (question != null) {
       _scaleMinController.text = question.scaleMin.toString();
       _scaleMaxController.text = question.scaleMax.toString();
-      _scaleMinLabelController.text = question.scaleMinLabel;
-      _scaleMaxLabelController.text = question.scaleMaxLabel;
     }
+
+    _syncScaleLabelControllers(question?.scaleLabels ?? const {});
   }
 
   @override
@@ -427,10 +423,41 @@ class _QuestionDialogState extends State<_QuestionDialog> {
 
     _scaleMinController.dispose();
     _scaleMaxController.dispose();
-    _scaleMinLabelController.dispose();
-    _scaleMaxLabelController.dispose();
+    for (final controller in _scaleLabelControllers.values) {
+      controller.dispose();
+    }
 
     super.dispose();
+  }
+
+  List<int> get _scaleValues {
+    final min = int.tryParse(_scaleMinController.text) ?? 1;
+    final max = int.tryParse(_scaleMaxController.text) ?? 5;
+
+    if (min >= max || max - min > 20) {
+      return const [1, 2, 3, 4, 5];
+    }
+
+    return [for (var value = min; value <= max; value++) value];
+  }
+
+  void _syncScaleLabelControllers([Map<int, String> initialLabels = const {}]) {
+    final values = _scaleValues.toSet();
+
+    for (final value in values) {
+      _scaleLabelControllers.putIfAbsent(
+        value,
+        () => TextEditingController(text: initialLabels[value] ?? ''),
+      );
+    }
+
+    final staleValues = _scaleLabelControllers.keys
+        .where((value) => !values.contains(value))
+        .toList();
+
+    for (final value in staleValues) {
+      _scaleLabelControllers.remove(value)?.dispose();
+    }
   }
 
   @override
@@ -549,6 +576,9 @@ class _QuestionDialogState extends State<_QuestionDialog> {
                         labelText: 'Minimum',
                         border: OutlineInputBorder(),
                       ),
+                      onChanged: (_) {
+                        setState(_syncScaleLabelControllers);
+                      },
                     ),
                   ),
 
@@ -565,32 +595,43 @@ class _QuestionDialogState extends State<_QuestionDialog> {
                         labelText: 'Maximum',
                         border: OutlineInputBorder(),
                       ),
+                      onChanged: (_) {
+                        setState(_syncScaleLabelControllers);
+                      },
                     ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
-              TextField(
-                controller: _scaleMinLabelController,
-                decoration: const InputDecoration(
-                  labelText: 'Minimum label',
-                  hintText: 'Not satisfied',
-                  border: OutlineInputBorder(),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Description for each scale value',
+                  style: TextStyle(fontWeight: FontWeight.w500),
                 ),
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
-              TextField(
-                controller: _scaleMaxLabelController,
-                decoration: const InputDecoration(
-                  labelText: 'Maximum label',
-                  hintText: 'Very satisfied',
-                  border: OutlineInputBorder(),
-                ),
-              ),
+              ..._scaleValues.map((value) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: TextField(
+                    controller: _scaleLabelControllers[value],
+                    decoration: InputDecoration(
+                      labelText: 'Value $value description',
+                      hintText: value == _scaleValues.first
+                          ? 'Not satisfied'
+                          : value == _scaleValues.last
+                          ? 'Very satisfied'
+                          : 'Describe this value',
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                );
+              }),
             ],
 
             CheckboxListTile(
@@ -649,6 +690,7 @@ class _QuestionDialogState extends State<_QuestionDialog> {
 
     int scaleMin = 1;
     int scaleMax = 5;
+    final scaleLabels = <int, String>{};
 
     if (_hasLinearScale) {
       scaleMin = int.tryParse(_scaleMinController.text) ?? 1;
@@ -662,6 +704,21 @@ class _QuestionDialogState extends State<_QuestionDialog> {
         );
         return;
       }
+
+      for (var value = scaleMin; value <= scaleMax; value++) {
+        final label = _scaleLabelControllers[value]?.text.trim() ?? '';
+        if (label.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Please provide a description for scale value $value.',
+              ),
+            ),
+          );
+          return;
+        }
+        scaleLabels[value] = label;
+      }
     }
 
     final question = Question(
@@ -674,8 +731,7 @@ class _QuestionDialogState extends State<_QuestionDialog> {
       options: options,
       scaleMin: scaleMin,
       scaleMax: scaleMax,
-      scaleMinLabel: _scaleMinLabelController.text.trim(),
-      scaleMaxLabel: _scaleMaxLabelController.text.trim(),
+      scaleLabels: scaleLabels,
     );
 
     Navigator.of(context).pop(question);

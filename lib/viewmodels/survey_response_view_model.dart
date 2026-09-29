@@ -14,9 +14,9 @@ class SurveyResponseViewModel extends ChangeNotifier {
     required SurveyRepository surveyRepository,
     required ResponseRepository responseRepository,
     required String surveyId,
-  })  : _surveyRepository = surveyRepository,
-        _responseRepository = responseRepository,
-        _surveyId = surveyId;
+  }) : _surveyRepository = surveyRepository,
+       _responseRepository = responseRepository,
+       _surveyId = surveyId;
 
   Survey? _survey;
   final Map<String, dynamic> _answers = {};
@@ -32,8 +32,7 @@ class SurveyResponseViewModel extends ChangeNotifier {
 
   Survey? get survey => _survey;
 
-  Map<String, dynamic> get answers =>
-      Map.unmodifiable(_answers);
+  Map<String, dynamic> get answers => Map.unmodifiable(_answers);
 
   String get respondentName => _respondentName;
 
@@ -47,8 +46,7 @@ class SurveyResponseViewModel extends ChangeNotifier {
 
   String? get errorMessage => _errorMessage;
 
-  bool get isAvailable =>
-      _survey != null && _survey!.isPublished;
+  bool get isAvailable => _survey != null && _survey!.isPublished;
 
   Future<void> loadSurvey() async {
     _isLoading = true;
@@ -94,15 +92,13 @@ class SurveyResponseViewModel extends ChangeNotifier {
       return false;
     }
 
-    if (_survey!.requireRespondentName &&
-        _respondentName.trim().isEmpty) {
+    if (_survey!.requireRespondentName && _respondentName.trim().isEmpty) {
       _errorMessage = 'Please enter your name.';
       notifyListeners();
       return false;
     }
 
-    if (_survey!.requireRespondentEmail &&
-        _respondentEmail.trim().isEmpty) {
+    if (_survey!.requireRespondentEmail && _respondentEmail.trim().isEmpty) {
       _errorMessage = 'Please enter your email.';
       notifyListeners();
       return false;

@@ -70,8 +70,7 @@ class Question {
   // Linear scale settings
   final int scaleMin;
   final int scaleMax;
-  final String scaleMinLabel;
-  final String scaleMaxLabel;
+  final Map<int, String> scaleLabels;
 
   const Question({
     required this.id,
@@ -81,7 +80,6 @@ class Question {
     required this.options,
     this.scaleMin = 1,
     this.scaleMax = 5,
-    this.scaleMinLabel = '',
-    this.scaleMaxLabel = '',
+    this.scaleLabels = const {},
   });
 }
