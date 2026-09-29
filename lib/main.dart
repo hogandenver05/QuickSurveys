@@ -30,6 +30,11 @@ class QuickSurveysApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'QuickSurveys',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+        useMaterial3: true,
+      ),
       home: DashboardView(
         surveyRepository: surveyRepository,
         responseRepository: responseRepository,
