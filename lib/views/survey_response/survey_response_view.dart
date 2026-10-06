@@ -294,7 +294,12 @@ class _SurveyResponseViewState extends State<SurveyResponseView> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: scaleValues.map((value) {
-                final label = question.scaleLabels[value] ?? '';
+                String label = '';
+                if (value == question.scaleMin) {
+                  label = question.scaleMinLabel;
+                } else if (value == question.scaleMax) {
+                  label = question.scaleMaxLabel;
+                }
 
                 return Expanded(
                   child: Padding(

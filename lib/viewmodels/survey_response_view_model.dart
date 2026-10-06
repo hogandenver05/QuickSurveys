@@ -2,20 +2,24 @@ import 'package:flutter/foundation.dart';
 
 import '../models/survey.dart';
 import '../models/survey_response.dart';
+import '../repositories/auth_repository.dart';
 import '../repositories/response_repository.dart';
 import '../repositories/survey_repository.dart';
 
 class SurveyResponseViewModel extends ChangeNotifier {
   final SurveyRepository _surveyRepository;
   final ResponseRepository _responseRepository;
+  final AuthRepository _authRepository;
   final String _surveyId;
 
   SurveyResponseViewModel({
     required SurveyRepository surveyRepository,
     required ResponseRepository responseRepository,
+    required AuthRepository authRepository,
     required String surveyId,
   }) : _surveyRepository = surveyRepository,
        _responseRepository = responseRepository,
+       _authRepository = authRepository,
        _surveyId = surveyId;
 
   Survey? _survey;
@@ -62,8 +66,9 @@ class SurveyResponseViewModel extends ChangeNotifier {
       } else {
         _survey = survey;
       }
-    } catch (_) {
-      _errorMessage = 'Unable to load survey.';
+    } catch (e) {
+      debugPrint('Error loading survey: $e');
+      _errorMessage = 'Unable to load survey: $e';
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -143,16 +148,22 @@ class SurveyResponseViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
+      final answerList = _answers.entries.map((entry) {
+        return Answer(questionId: entry.key, value: entry.value);
+      }).toList();
+
       final response = SurveyResponse(
         id: DateTime.now().microsecondsSinceEpoch.toString(),
         surveyId: _surveyId,
+        surveyCreatorId: _survey!.createdBy, // Added this
+        respondentId: _authRepository.currentUser?.id,
         respondentName: _survey!.requireRespondentName
             ? _respondentName.trim()
             : null,
         respondentEmail: _survey!.requireRespondentEmail
             ? _respondentEmail.trim()
             : null,
-        answers: Map<String, dynamic>.from(_answers),
+        answers: answerList,
         submittedAt: DateTime.now(),
       );
 
@@ -160,8 +171,9 @@ class SurveyResponseViewModel extends ChangeNotifier {
 
       _submitted = true;
       return true;
-    } catch (_) {
-      _errorMessage = 'Unable to submit response.';
+    } catch (e) {
+      debugPrint('Error submitting response: $e');
+      _errorMessage = 'Unable to submit response: $e';
       return false;
     } finally {
       _isSubmitting = false;

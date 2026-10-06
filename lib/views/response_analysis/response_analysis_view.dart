@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/survey.dart';
+import '../../models/survey_response.dart';
 import '../../repositories/response_repository.dart';
 import '../../repositories/survey_repository.dart';
 import '../../viewmodels/response_analysis_view_model.dart';
@@ -132,12 +133,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
   }
 
   Widget _buildQuestionSummary(Question question) {
-    final responses = _viewModel.responses;
-
-    final answers = responses
-        .map((response) => response.answers[question.id])
-        .where((answer) => answer != null)
-        .toList();
+    final answers = _viewModel.getAnswersForQuestion(question.id);
 
     if (question.type == QuestionType.shortAnswer ||
         question.type == QuestionType.paragraph) {
@@ -190,19 +186,14 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
   Widget _buildChoiceChart(Question question, List<dynamic> answers) {
     final counts = <String, int>{};
 
-    for (final option in question.options) {
-      counts[option] = 0;
-    }
-
     if (question.type == QuestionType.linearScale) {
       for (var value = question.scaleMin; value <= question.scaleMax; value++) {
-        final description = question.scaleLabels[value];
-
-        final label = description == null || description.isEmpty
-            ? value.toString()
-            : '$value — $description';
-
+        final label = _getLinearScaleLabel(question, value);
         counts[label] = 0;
+      }
+    } else {
+      for (final option in question.options) {
+        counts[option] = 0;
       }
     }
 
@@ -214,20 +205,12 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
         }
       } else {
         String key;
-
         if (question.type == QuestionType.linearScale) {
-          final value = int.tryParse(answer.toString());
-          final description = value == null
-              ? null
-              : question.scaleLabels[value];
-
-          key = value != null && description != null && description.isNotEmpty
-              ? '$value — $description'
-              : answer.toString();
+          final value = int.tryParse(answer.toString()) ?? 0;
+          key = _getLinearScaleLabel(question, value);
         } else {
           key = answer.toString();
         }
-
         counts[key] = (counts[key] ?? 0) + 1;
       }
     }
@@ -279,6 +262,16 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
     );
   }
 
+  String _getLinearScaleLabel(Question question, int value) {
+    if (value == question.scaleMin && question.scaleMinLabel.isNotEmpty) {
+      return '$value (${question.scaleMinLabel})';
+    }
+    if (value == question.scaleMax && question.scaleMaxLabel.isNotEmpty) {
+      return '$value (${question.scaleMaxLabel})';
+    }
+    return value.toString();
+  }
+
   Widget _buildIndividualResponses(Survey survey) {
     final responses = _viewModel.responses;
 
@@ -311,7 +304,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: survey.questions.map((question) {
-                    final answer = response.answers[question.id];
+                    final answer = _getAnswerForQuestion(response, question.id);
 
                     return Padding(
                       padding: const EdgeInsets.only(top: 12),
@@ -341,7 +334,17 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
     );
   }
 
-  String _respondentTitle(dynamic response) {
+  dynamic _getAnswerForQuestion(SurveyResponse response, String questionId) {
+    try {
+      return response.answers
+          .firstWhere((a) => a.questionId == questionId)
+          .value;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String _respondentTitle(SurveyResponse response) {
     if (response.respondentName != null &&
         response.respondentName!.trim().isNotEmpty) {
       return response.respondentName!;
@@ -360,11 +363,10 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
       return 'No answer';
     }
 
-    if (question.type == QuestionType.linearScale && answer is int) {
-      final label = question.scaleLabels[answer];
-
-      if (label != null && label.isNotEmpty) {
-        return '$answer — $label';
+    if (question.type == QuestionType.linearScale) {
+      final value = int.tryParse(answer.toString());
+      if (value != null) {
+        return _getLinearScaleLabel(question, value);
       }
     }
 
