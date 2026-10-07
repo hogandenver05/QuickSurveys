@@ -7,9 +7,9 @@ abstract interface class AuthRepository {
   Future<void> signInWithEmailAndPassword(String email, String password);
   Future<void> signInWithGoogle();
   Future<void> createUserWithEmailAndPassword(
-      String email,
-      String password,
-      String name,
-      );
+    String email,
+    String password,
+    String name,
+  );
   Future<void> signOut();
 }

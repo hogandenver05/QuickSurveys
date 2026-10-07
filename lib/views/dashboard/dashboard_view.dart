@@ -42,13 +42,6 @@ class _DashboardViewState extends State<DashboardView>
       authRepository: widget.authRepository,
     );
 
-    _tabController = TabController(
-      length: 2,
-      vsync: this,
-    );
-
-    _tabController.addListener(_handleTabChange);
-
     _viewModel.loadSurveys();
   }
 
@@ -165,28 +158,12 @@ class _DashboardViewState extends State<DashboardView>
         title: const Text('QuickSurveys'),
         actions: [
           IconButton(
-            tooltip: 'Logout',
             icon: const Icon(Icons.logout),
             onPressed: () => _viewModel.signOut(),
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(
-              icon: Icon(Icons.assignment_outlined),
-              text: 'My Surveys',
-            ),
-            Tab(
-              icon: Icon(Icons.explore_outlined),
-              text: 'Explore Surveys',
-            ),
-          ],
-        ),
       ),
-
-      floatingActionButton: _currentTabIndex == 0
-          ? FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: _createSurvey,
         icon: const Icon(Icons.add),
         label: const Text('Create Survey'),
@@ -205,30 +182,11 @@ class _DashboardViewState extends State<DashboardView>
           if (_viewModel.errorMessage != null) {
             return Center(
               child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      size: 48,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      _viewModel.errorMessage!,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    FilledButton.icon(
-                      onPressed: _viewModel.loadSurveys,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Try Again'),
-                    ),
-                  ],
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  _viewModel.errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
             );
@@ -475,19 +433,10 @@ class _SurveyCard extends StatelessWidget {
           },
           itemBuilder: (context) {
             return const [
-
-              PopupMenuItem(
-                value: 'analyze',
-                child: Text('Analyze Responses'),
-              ),
-              PopupMenuItem(
-                value: 'edit',
-                child: Text('Edit'),
-              ),
-              PopupMenuItem(
-                value: 'delete',
-                child: Text('Delete'),
-              ),
+              PopupMenuItem(value: 'open', child: Text('Open Survey')),
+              PopupMenuItem(value: 'analyze', child: Text('Analyze Responses')),
+              PopupMenuItem(value: 'edit', child: Text('Edit')),
+              PopupMenuItem(value: 'delete', child: Text('Delete')),
             ];
           },
         ),

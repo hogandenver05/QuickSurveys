@@ -37,9 +37,9 @@ class SurveyResponse {
       respondentEmail: map['respondentEmail'],
       submittedAt: parseDateTime(map['submittedAt']),
       answers:
-      (map['answers'] as List<dynamic>?)
-          ?.map((a) => Answer.fromMap(a as Map<String, dynamic>))
-          .toList() ??
+          (map['answers'] as List<dynamic>?)
+              ?.map((a) => Answer.fromMap(a as Map<String, dynamic>))
+              .toList() ??
           [],
     );
   }

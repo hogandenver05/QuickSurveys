@@ -27,17 +27,17 @@ class DefaultFirebaseOptions {
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
-              'you can reconfigure this by running the FlutterFire CLI again.',
+          'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
-              'you can reconfigure this by running the FlutterFire CLI again.',
+          'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
-              'you can reconfigure this by running the FlutterFire CLI again.',
+          'you can reconfigure this by running the FlutterFire CLI again.',
         );
       default:
         throw UnsupportedError(
@@ -47,30 +47,29 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDpWAclw-NEQ4L-TB-2SW9LXfo2l8YE9Ms',
-    appId: '1:996656980247:web:ef29d5dfbc23e290645752',
-    messagingSenderId: '996656980247',
-    projectId: 'quicksurveys-8d75a',
-    authDomain: 'quicksurveys-8d75a.firebaseapp.com',
-    storageBucket: 'quicksurveys-8d75a.firebasestorage.app',
-    measurementId: 'G-YRLDP46NXW',
+    apiKey: 'AIzaSyAmgkLX85hjyl3zLlYKh4QMLs_wg66oFsY',
+    appId: '1:908967302608:web:c80d3668da6e58590b15d5',
+    messagingSenderId: '908967302608',
+    projectId: 'quicksurveys',
+    authDomain: 'quicksurveys.firebaseapp.com',
+    storageBucket: 'quicksurveys.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyB6WFXbal3YViLU5EF2pefTLZhAl61dOZs',
-    appId: '1:996656980247:android:2686fc9673969cc9645752',
-    messagingSenderId: '996656980247',
-    projectId: 'quicksurveys-8d75a',
-    storageBucket: 'quicksurveys-8d75a.firebasestorage.app',
+    apiKey: 'AIzaSyBNM2Fe80SFmob9h2qT9nfsS_wkH3yEk3w',
+    appId: '1:908967302608:android:3247ec5dbe5b1d6e0b15d5',
+    messagingSenderId: '908967302608',
+    projectId: 'quicksurveys',
+    storageBucket: 'quicksurveys.firebasestorage.app',
   );
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBzYe7LuXmst0sbN09n9kmVOv1D_5pj3ZY',
-    appId: '1:996656980247:ios:c87aafabedffd560645752',
-    messagingSenderId: '996656980247',
-    projectId: 'quicksurveys-8d75a',
-    storageBucket: 'quicksurveys-8d75a.firebasestorage.app',
-    androidClientId: '996656980247-765khj22oh4t0n6evtvaf15258vavlqg.apps.googleusercontent.com',
-    iosClientId: '996656980247-h8902ott1q7hbshop5oi60fvoc1ha0g1.apps.googleusercontent.com',
+    apiKey: 'AIzaSyCpYmEhddKpGJ0UUw7kBc5dWzTa9dSKUfE',
+    appId: '1:908967302608:ios:9b3861cf2c94d7fa0b15d5',
+    messagingSenderId: '908967302608',
+    projectId: 'quicksurveys',
+    storageBucket: 'quicksurveys.firebasestorage.app',
+    androidClientId: '908967302608-5r3e9dqp1e54e52i8s3meiokbdcn77c0.apps.googleusercontent.com',
+    iosClientId: '908967302608-om49obrea5qhq2r6f9dljuei04nh6qrc.apps.googleusercontent.com',
     iosBundleId: 'com.example.surveys',
   );
 }

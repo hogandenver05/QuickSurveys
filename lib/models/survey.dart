@@ -55,14 +55,14 @@ class Survey {
         createdAt: parseDateTime(map['createdAt']),
         updatedAt: parseDateTime(map['updatedAt']),
         questions:
-        (map['questions'] as Iterable?)
-            ?.map(
-              (q) => Question.fromMap(Map<String, dynamic>.from(q as Map)),
-        )
-            .toList() ??
+            (map['questions'] as Iterable?)
+                ?.map(
+                  (q) => Question.fromMap(Map<String, dynamic>.from(q as Map)),
+                )
+                .toList() ??
             [],
         allowAnonymousResponses:
-        map['allowAnonymousResponses'] == true ||
+            map['allowAnonymousResponses'] == true ||
             map['allowAnonymousResponses'] == null,
         requireRespondentName: map['requireRespondentName'] == true,
         requireRespondentEmail: map['requireRespondentEmail'] == true,
@@ -111,11 +111,11 @@ class Survey {
       updatedAt: updatedAt ?? this.updatedAt,
       questions: questions ?? this.questions,
       allowAnonymousResponses:
-      allowAnonymousResponses ?? this.allowAnonymousResponses,
+          allowAnonymousResponses ?? this.allowAnonymousResponses,
       requireRespondentName:
-      requireRespondentName ?? this.requireRespondentName,
+          requireRespondentName ?? this.requireRespondentName,
       requireRespondentEmail:
-      requireRespondentEmail ?? this.requireRespondentEmail,
+          requireRespondentEmail ?? this.requireRespondentEmail,
     );
   }
 }
@@ -150,12 +150,12 @@ class Question {
       id: map['id']?.toString() ?? '',
       text: map['text']?.toString() ?? '',
       type: QuestionType.values.firstWhere(
-            (e) => e.name == map['type'],
+        (e) => e.name == map['type'],
         orElse: () => QuestionType.shortAnswer,
       ),
       isRequired: map['isRequired'] == true,
       options:
-      (map['options'] as Iterable?)?.map((e) => e.toString()).toList() ??
+          (map['options'] as Iterable?)?.map((e) => e.toString()).toList() ??
           [],
       scaleMin: map['scaleMin'] is int ? map['scaleMin'] : 1,
       scaleMax: map['scaleMax'] is int ? map['scaleMax'] : 5,

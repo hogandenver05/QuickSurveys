@@ -6,15 +6,15 @@ class InMemoryResponseRepository implements ResponseRepository {
 
   @override
   Future<List<SurveyResponse>> getResponsesForSurvey(
-      String surveyId,
-      String creatorId,
-      ) async {
+    String surveyId,
+    String creatorId,
+  ) async {
     return _responses
         .where(
           (response) =>
-      response.surveyId == surveyId &&
-          response.surveyCreatorId == creatorId,
-    )
+              response.surveyId == surveyId &&
+              response.surveyCreatorId == creatorId,
+        )
         .toList();
   }
 

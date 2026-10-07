@@ -245,7 +245,7 @@ class _SurveyBuilderViewState extends State<SurveyBuilderView> {
                               onPressed: _viewModel.isSaving
                                   ? null
                                   : () =>
-                                  _showEditQuestionDialog(context, index),
+                                        _showEditQuestionDialog(context, index),
                             ),
                             IconButton(
                               tooltip: 'Delete question',
@@ -376,9 +376,9 @@ class _QuestionDialogState extends State<_QuestionDialog> {
   );
 
   final TextEditingController _scaleMinLabelController =
-  TextEditingController();
+      TextEditingController();
   final TextEditingController _scaleMaxLabelController =
-  TextEditingController();
+      TextEditingController();
 
   bool get _hasOptions =>
       _type == QuestionType.multipleChoice || _type == QuestionType.checkboxes;
@@ -510,15 +510,15 @@ class _QuestionDialogState extends State<_QuestionDialog> {
                       border: const OutlineInputBorder(),
                       suffixIcon: _optionControllers.length > 2
                           ? IconButton(
-                        icon: const Icon(Icons.remove_circle_outline),
-                        onPressed: () {
-                          setState(() {
-                            final controller = _optionControllers
-                                .removeAt(index);
-                            controller.dispose();
-                          });
-                        },
-                      )
+                              icon: const Icon(Icons.remove_circle_outline),
+                              onPressed: () {
+                                setState(() {
+                                  final controller = _optionControllers
+                                      .removeAt(index);
+                                  controller.dispose();
+                                });
+                              },
+                            )
                           : null,
                     ),
                   ),
@@ -638,9 +638,9 @@ class _QuestionDialogState extends State<_QuestionDialog> {
 
     final options = _hasOptions
         ? _optionControllers
-        .map((controller) => controller.text.trim())
-        .where((option) => option.isNotEmpty)
-        .toList()
+              .map((controller) => controller.text.trim())
+              .where((option) => option.isNotEmpty)
+              .toList()
         : <String>[];
 
     if (_hasOptions && options.length < 2) {
@@ -673,7 +673,7 @@ class _QuestionDialogState extends State<_QuestionDialog> {
 
     final question = Question(
       id:
-      widget.existingQuestion?.id ??
+          widget.existingQuestion?.id ??
           DateTime.now().microsecondsSinceEpoch.toString(),
       text: text,
       type: _type,

@@ -11,8 +11,10 @@ class SurveyBuilderViewModel extends ChangeNotifier {
   SurveyBuilderViewModel({
     required this._surveyRepository,
     Survey? existingSurvey,
-    this._currentUserId = '',
-  }) : _existingSurvey = existingSurvey {
+    String currentUserId = '',
+  }) : _surveyRepository = surveyRepository,
+       _existingSurvey = existingSurvey,
+       _currentUserId = currentUserId {
     _title = existingSurvey?.title ?? '';
     _description = existingSurvey?.description ?? '';
 
@@ -147,19 +149,19 @@ class SurveyBuilderViewModel extends ChangeNotifier {
             requireRespondentEmail: _requireRespondentEmail,
             updatedAt: now,
           ) ??
-              Survey(
-                id: now.microsecondsSinceEpoch.toString(),
-                title: _title.trim(),
-                description: _description.trim(),
-                isPublished: false,
-                questions: List<Question>.from(_questions),
-                allowAnonymousResponses: _allowAnonymousResponses,
-                requireRespondentName: _requireRespondentName,
-                requireRespondentEmail: _requireRespondentEmail,
-                createdBy: _currentUserId,
-                createdAt: now,
-                updatedAt: now,
-              );
+          Survey(
+            id: now.microsecondsSinceEpoch.toString(),
+            title: _title.trim(),
+            description: _description.trim(),
+            isPublished: false,
+            questions: List<Question>.from(_questions),
+            allowAnonymousResponses: _allowAnonymousResponses,
+            requireRespondentName: _requireRespondentName,
+            requireRespondentEmail: _requireRespondentEmail,
+            createdBy: _currentUserId,
+            createdAt: now,
+            updatedAt: now,
+          );
 
       if (isEditing) {
         await _surveyRepository.updateSurvey(survey);
@@ -201,19 +203,19 @@ class SurveyBuilderViewModel extends ChangeNotifier {
             isPublished: true,
             updatedAt: now,
           ) ??
-              Survey(
-                id: now.microsecondsSinceEpoch.toString(),
-                title: _title.trim(),
-                description: _description.trim(),
-                isPublished: true,
-                questions: List<Question>.from(_questions),
-                allowAnonymousResponses: _allowAnonymousResponses,
-                requireRespondentName: _requireRespondentName,
-                requireRespondentEmail: _requireRespondentEmail,
-                createdBy: _currentUserId,
-                createdAt: now,
-                updatedAt: now,
-              );
+          Survey(
+            id: now.microsecondsSinceEpoch.toString(),
+            title: _title.trim(),
+            description: _description.trim(),
+            isPublished: true,
+            questions: List<Question>.from(_questions),
+            allowAnonymousResponses: _allowAnonymousResponses,
+            requireRespondentName: _requireRespondentName,
+            requireRespondentEmail: _requireRespondentEmail,
+            createdBy: _currentUserId,
+            createdAt: now,
+            updatedAt: now,
+          );
 
       if (isEditing) {
         await _surveyRepository.updateSurvey(survey);

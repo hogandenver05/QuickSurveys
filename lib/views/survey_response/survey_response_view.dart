@@ -126,16 +126,16 @@ class _SurveyResponseViewState extends State<SurveyResponseView> {
                         onPressed: widget.viewModel.isSubmitting
                             ? null
                             : () async {
-                          await widget.viewModel.submit();
-                        },
+                                await widget.viewModel.submit();
+                              },
                         child: widget.viewModel.isSubmitting
                             ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                          ),
-                        )
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
                             : const Text('Submit Response'),
                       ),
                     ),
@@ -236,22 +236,20 @@ class _SurveyResponseViewState extends State<SurveyResponseView> {
       case QuestionType.multipleChoice:
         final selected = widget.viewModel.answers[question.id] as String?;
 
-        return RadioGroup<String>(
-          groupValue: selected,
-          onChanged: (value) {
-            if (value != null) {
-              widget.viewModel.setAnswer(question.id, value);
-            }
-          },
-          child: Column(
-            children: question.options.map((option) {
-              return RadioListTile<String>(
-                title: Text(option),
-                value: option,
-                contentPadding: EdgeInsets.zero,
-              );
-            }).toList(),
-          ),
+        return Column(
+          children: question.options.map((option) {
+            return RadioListTile<String>(
+              title: Text(option),
+              value: option,
+              groupValue: selected,
+              contentPadding: EdgeInsets.zero,
+              onChanged: (value) {
+                if (value != null) {
+                  widget.viewModel.setAnswer(question.id, value);
+                }
+              },
+            );
+          }).toList(),
         );
 
       case QuestionType.checkboxes:
@@ -283,9 +281,9 @@ class _SurveyResponseViewState extends State<SurveyResponseView> {
 
         final scaleValues = [
           for (
-          var value = question.scaleMin;
-          value <= question.scaleMax;
-          value++
+            var value = question.scaleMin;
+            value <= question.scaleMax;
+            value++
           )
             value,
         ];

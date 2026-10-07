@@ -13,11 +13,14 @@ class SurveyResponseViewModel extends ChangeNotifier {
   final String _surveyId;
 
   SurveyResponseViewModel({
-    required this._surveyRepository,
-    required this._responseRepository,
-    required this._authRepository,
-    required this._surveyId,
-  });
+    required SurveyRepository surveyRepository,
+    required ResponseRepository responseRepository,
+    required AuthRepository authRepository,
+    required String surveyId,
+  }) : _surveyRepository = surveyRepository,
+       _responseRepository = responseRepository,
+       _authRepository = authRepository,
+       _surveyId = surveyId;
 
   Survey? _survey;
   final Map<String, dynamic> _answers = {};

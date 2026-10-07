@@ -166,7 +166,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
               const Text('No responses yet.')
             else
               ...answers.map(
-                    (answer) => Container(
+                (answer) => Container(
                   width: double.infinity,
                   margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.all(12),
@@ -235,7 +235,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
               const Text('No responses yet.')
             else
               ...counts.entries.map(
-                    (entry) => Padding(
+                (entry) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

@@ -7,16 +7,16 @@ class FirestoreResponseRepository implements ResponseRepository {
   final FirebaseFirestore _firestore;
 
   FirestoreResponseRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _responsesCollection =>
       _firestore.collection('responses');
 
   @override
   Future<List<SurveyResponse>> getResponsesForSurvey(
-      String surveyId,
-      String creatorId,
-      ) async {
+    String surveyId,
+    String creatorId,
+  ) async {
     // Include creatorId in the query to satisfy security rules
     final snapshot = await _responsesCollection
         .where('surveyId', isEqualTo: surveyId)

@@ -37,10 +37,10 @@ class InMemoryAuthRepository implements AuthRepository {
 
   @override
   Future<void> createUserWithEmailAndPassword(
-      String email,
-      String password,
-      String name,
-      ) async {
+    String email,
+    String password,
+    String name,
+  ) async {
     _currentUser = AppUser(
       id: 'new-user',
       email: email,

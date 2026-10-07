@@ -11,10 +11,12 @@ class ResponseAnalysisViewModel extends ChangeNotifier {
   final String _surveyId;
 
   ResponseAnalysisViewModel({
-    required this._surveyRepository,
-    required this._responseRepository,
-    required this._surveyId,
-  });
+    required SurveyRepository surveyRepository,
+    required ResponseRepository responseRepository,
+    required String surveyId,
+  }) : _surveyRepository = surveyRepository,
+       _responseRepository = responseRepository,
+       _surveyId = surveyId;
 
   Survey? _survey;
   List<SurveyResponse> _responses = [];
@@ -31,15 +33,15 @@ class ResponseAnalysisViewModel extends ChangeNotifier {
   List<dynamic> getAnswersForQuestion(String questionId) {
     return _responses
         .map((response) {
-      try {
-        final answer = response.answers.firstWhere(
+          try {
+            final answer = response.answers.firstWhere(
               (a) => a.questionId == questionId,
-        );
-        return answer.value;
-      } catch (_) {
-        return null;
-      }
-    })
+            );
+            return answer.value;
+          } catch (_) {
+            return null;
+          }
+        })
         .where((answer) => answer != null)
         .toList();
   }

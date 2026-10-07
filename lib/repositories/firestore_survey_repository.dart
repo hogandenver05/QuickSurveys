@@ -7,7 +7,7 @@ class FirestoreSurveyRepository implements SurveyRepository {
   final FirebaseFirestore _firestore;
 
   FirestoreSurveyRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _surveysCollection =>
       _firestore.collection('surveys');
@@ -58,23 +58,5 @@ class FirestoreSurveyRepository implements SurveyRepository {
   @override
   Future<void> deleteSurvey(String id) async {
     await _surveysCollection.doc(id).delete();
-  }
-
-  @override
-  Future<List<Survey>> getPublishedSurveys({
-    required String excludeUserId,
-  }) async {
-    final snapshot = await _surveysCollection
-        .where('isPublished', isEqualTo: true)
-        .get();
-
-    final surveys = snapshot.docs
-        .map((doc) => Survey.fromMap(doc.data(), doc.id))
-        .where((survey) => survey.createdBy != excludeUserId)
-        .toList();
-
-    surveys.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
-    return surveys;
   }
 }
