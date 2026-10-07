@@ -214,7 +214,7 @@ class _SurveyBuilderViewState extends State<SurveyBuilderView> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: _viewModel.questions.length,
-                  onReorder: _viewModel.reorderQuestions,
+                  onReorderItem: _viewModel.reorderQuestions,
                   itemBuilder: (context, index) {
                     final question = _viewModel.questions[index];
 
@@ -459,7 +459,7 @@ class _QuestionDialogState extends State<_QuestionDialog> {
             const SizedBox(height: 16),
 
             DropdownButtonFormField<QuestionType>(
-              value: _type,
+              initialValue: _type,
               decoration: const InputDecoration(
                 labelText: 'Question type',
                 border: OutlineInputBorder(),
