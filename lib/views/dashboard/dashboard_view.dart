@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/survey.dart';
 import '../../repositories/response_repository.dart';
 import '../../repositories/survey_repository.dart';
+import '../../repositories/auth_repository.dart';
 import '../../viewmodels/dashboard_view_model.dart';
 import '../../viewmodels/survey_response_view_model.dart';
 import '../survey_builder/survey_builder_view.dart';
@@ -12,12 +13,15 @@ import '../response_analysis/response_analysis_view.dart';
 class DashboardView extends StatefulWidget {
   final SurveyRepository surveyRepository;
   final ResponseRepository responseRepository;
+  final AuthRepository authRepository;
 
   const DashboardView({
     super.key,
     required this.surveyRepository,
     required this.responseRepository,
+    required this.authRepository,
   });
+
   @override
   State<DashboardView> createState() => _DashboardViewState();
 }
@@ -29,7 +33,10 @@ class _DashboardViewState extends State<DashboardView> {
   void initState() {
     super.initState();
 
-    _viewModel = DashboardViewModel(surveyRepository: widget.surveyRepository);
+    _viewModel = DashboardViewModel(
+      surveyRepository: widget.surveyRepository,
+      authRepository: widget.authRepository,
+    );
 
     _viewModel.loadSurveys();
   }
@@ -43,8 +50,10 @@ class _DashboardViewState extends State<DashboardView> {
   Future<void> _createSurvey() async {
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) =>
-            SurveyBuilderView(surveyRepository: widget.surveyRepository),
+        builder: (_) => SurveyBuilderView(
+          surveyRepository: widget.surveyRepository,
+          authRepository: widget.authRepository,
+        ),
       ),
     );
 
@@ -56,6 +65,7 @@ class _DashboardViewState extends State<DashboardView> {
       MaterialPageRoute(
         builder: (_) => SurveyBuilderView(
           surveyRepository: widget.surveyRepository,
+          authRepository: widget.authRepository,
           survey: survey,
         ),
       ),
@@ -71,6 +81,7 @@ class _DashboardViewState extends State<DashboardView> {
           viewModel: SurveyResponseViewModel(
             surveyRepository: widget.surveyRepository,
             responseRepository: widget.responseRepository,
+            authRepository: widget.authRepository,
             surveyId: survey.id,
           ),
         ),
@@ -121,7 +132,15 @@ class _DashboardViewState extends State<DashboardView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('QuickSurveys')),
+      appBar: AppBar(
+        title: const Text('QuickSurveys'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => _viewModel.signOut(),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _createSurvey,
         icon: const Icon(Icons.add),
@@ -135,7 +154,16 @@ class _DashboardViewState extends State<DashboardView> {
           }
 
           if (_viewModel.errorMessage != null) {
-            return Center(child: Text(_viewModel.errorMessage!));
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  _viewModel.errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
+            );
           }
 
           if (_viewModel.surveys.isEmpty) {

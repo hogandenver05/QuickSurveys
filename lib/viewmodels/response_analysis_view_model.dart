@@ -32,7 +32,16 @@ class ResponseAnalysisViewModel extends ChangeNotifier {
 
   List<dynamic> getAnswersForQuestion(String questionId) {
     return _responses
-        .map((response) => response.answers[questionId])
+        .map((response) {
+          try {
+            final answer = response.answers.firstWhere(
+              (a) => a.questionId == questionId,
+            );
+            return answer.value;
+          } catch (_) {
+            return null;
+          }
+        })
         .where((answer) => answer != null)
         .toList();
   }
@@ -58,9 +67,14 @@ class ResponseAnalysisViewModel extends ChangeNotifier {
 
       _survey = survey;
 
-      _responses = await _responseRepository.getResponses(_surveyId);
-    } catch (_) {
-      _errorMessage = 'Unable to load responses.';
+      // Pass the creator ID to the repository to satisfy security rules
+      _responses = await _responseRepository.getResponsesForSurvey(
+        _surveyId,
+        survey.createdBy,
+      );
+    } catch (e) {
+      debugPrint('Error loading analysis: $e');
+      _errorMessage = 'Unable to load responses: $e';
     } finally {
       _isLoading = false;
       notifyListeners();

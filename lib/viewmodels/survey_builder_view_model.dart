@@ -6,12 +6,15 @@ import '../repositories/survey_repository.dart';
 class SurveyBuilderViewModel extends ChangeNotifier {
   final SurveyRepository _surveyRepository;
   final Survey? _existingSurvey;
+  final String _currentUserId;
 
   SurveyBuilderViewModel({
     required SurveyRepository surveyRepository,
     Survey? existingSurvey,
+    String currentUserId = '',
   }) : _surveyRepository = surveyRepository,
-       _existingSurvey = existingSurvey {
+       _existingSurvey = existingSurvey,
+       _currentUserId = currentUserId {
     _title = existingSurvey?.title ?? '';
     _description = existingSurvey?.description ?? '';
 
@@ -138,6 +141,7 @@ class SurveyBuilderViewModel extends ChangeNotifier {
 
     try {
       _errorMessage = null;
+      final now = DateTime.now();
 
       final survey =
           _existingSurvey?.copyWith(
@@ -147,9 +151,10 @@ class SurveyBuilderViewModel extends ChangeNotifier {
             allowAnonymousResponses: _allowAnonymousResponses,
             requireRespondentName: _requireRespondentName,
             requireRespondentEmail: _requireRespondentEmail,
+            updatedAt: now,
           ) ??
           Survey(
-            id: DateTime.now().microsecondsSinceEpoch.toString(),
+            id: now.microsecondsSinceEpoch.toString(),
             title: _title.trim(),
             description: _description.trim(),
             isPublished: false,
@@ -157,6 +162,9 @@ class SurveyBuilderViewModel extends ChangeNotifier {
             allowAnonymousResponses: _allowAnonymousResponses,
             requireRespondentName: _requireRespondentName,
             requireRespondentEmail: _requireRespondentEmail,
+            createdBy: _currentUserId,
+            createdAt: now,
+            updatedAt: now,
           );
 
       if (isEditing) {
@@ -166,8 +174,9 @@ class SurveyBuilderViewModel extends ChangeNotifier {
       }
 
       return true;
-    } catch (_) {
-      _errorMessage = 'Unable to save survey.';
+    } catch (e) {
+      debugPrint('Error saving survey: $e');
+      _errorMessage = 'Unable to save survey: $e';
       return false;
     } finally {
       _setSaving(false);
@@ -185,6 +194,7 @@ class SurveyBuilderViewModel extends ChangeNotifier {
 
     try {
       _errorMessage = null;
+      final now = DateTime.now();
 
       final survey =
           _existingSurvey?.copyWith(
@@ -195,9 +205,10 @@ class SurveyBuilderViewModel extends ChangeNotifier {
             requireRespondentName: _requireRespondentName,
             requireRespondentEmail: _requireRespondentEmail,
             isPublished: true,
+            updatedAt: now,
           ) ??
           Survey(
-            id: DateTime.now().microsecondsSinceEpoch.toString(),
+            id: now.microsecondsSinceEpoch.toString(),
             title: _title.trim(),
             description: _description.trim(),
             isPublished: true,
@@ -205,6 +216,9 @@ class SurveyBuilderViewModel extends ChangeNotifier {
             allowAnonymousResponses: _allowAnonymousResponses,
             requireRespondentName: _requireRespondentName,
             requireRespondentEmail: _requireRespondentEmail,
+            createdBy: _currentUserId,
+            createdAt: now,
+            updatedAt: now,
           );
 
       if (isEditing) {
@@ -216,8 +230,9 @@ class SurveyBuilderViewModel extends ChangeNotifier {
       _savedSurveyId = survey.id;
 
       return true;
-    } catch (_) {
-      _errorMessage = 'Unable to publish survey.';
+    } catch (e) {
+      debugPrint('Error publishing survey: $e');
+      _errorMessage = 'Unable to publish survey: $e';
       notifyListeners();
       return false;
     } finally {

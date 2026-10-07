@@ -10,6 +10,11 @@ class InMemorySurveyRepository implements SurveyRepository {
   }
 
   @override
+  Future<List<Survey>> getSurveysForUser(String userId) async {
+    return _surveys.where((survey) => survey.createdBy == userId).toList();
+  }
+
+  @override
   Future<Survey?> getSurvey(String id) async {
     for (final survey in _surveys) {
       if (survey.id == id) {
