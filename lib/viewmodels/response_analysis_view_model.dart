@@ -11,12 +11,10 @@ class ResponseAnalysisViewModel extends ChangeNotifier {
   final String _surveyId;
 
   ResponseAnalysisViewModel({
-    required SurveyRepository surveyRepository,
-    required ResponseRepository responseRepository,
-    required String surveyId,
-  })  : _surveyRepository = surveyRepository,
-        _responseRepository = responseRepository,
-        _surveyId = surveyId;
+    required this._surveyRepository,
+    required this._responseRepository,
+    required this._surveyId,
+  });
 
   Survey? _survey;
   List<SurveyResponse> _responses = [];
@@ -26,14 +24,22 @@ class ResponseAnalysisViewModel extends ChangeNotifier {
 
   Survey? get survey => _survey;
 
-  List<SurveyResponse> get responses =>
-      List.unmodifiable(_responses);
+  List<SurveyResponse> get responses => List.unmodifiable(_responses);
 
   int get responseCount => _responses.length;
 
   List<dynamic> getAnswersForQuestion(String questionId) {
     return _responses
-        .map((response) => response.answers[questionId])
+        .map((response) {
+      try {
+        final answer = response.answers.firstWhere(
+              (a) => a.questionId == questionId,
+        );
+        return answer.value;
+      } catch (_) {
+        return null;
+      }
+    })
         .where((answer) => answer != null)
         .toList();
   }
@@ -59,9 +65,14 @@ class ResponseAnalysisViewModel extends ChangeNotifier {
 
       _survey = survey;
 
-      _responses = await _responseRepository.getResponses(_surveyId);
-    } catch (_) {
-      _errorMessage = 'Unable to load responses.';
+      // Pass the creator ID to the repository to satisfy security rules
+      _responses = await _responseRepository.getResponsesForSurvey(
+        _surveyId,
+        survey.createdBy,
+      );
+    } catch (e) {
+      debugPrint('Error loading analysis: $e');
+      _errorMessage = 'Unable to load responses: $e';
     } finally {
       _isLoading = false;
       notifyListeners();

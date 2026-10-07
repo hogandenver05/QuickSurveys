@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/survey.dart';
+import '../../models/survey_response.dart';
 import '../../repositories/response_repository.dart';
 import '../../repositories/survey_repository.dart';
 import '../../viewmodels/response_analysis_view_model.dart';
@@ -18,8 +19,7 @@ class ResponseAnalysisView extends StatefulWidget {
   });
 
   @override
-  State<ResponseAnalysisView> createState() =>
-      _ResponseAnalysisViewState();
+  State<ResponseAnalysisView> createState() => _ResponseAnalysisViewState();
 }
 
 class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
@@ -51,20 +51,14 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
       builder: (context, _) {
         if (_viewModel.isLoading) {
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
+            body: Center(child: CircularProgressIndicator()),
           );
         }
 
         if (_viewModel.errorMessage != null) {
           return Scaffold(
-            appBar: AppBar(
-              title: const Text('Response Analysis'),
-            ),
-            body: Center(
-              child: Text(_viewModel.errorMessage!),
-            ),
+            appBar: AppBar(title: const Text('Response Analysis')),
+            body: Center(child: Text(_viewModel.errorMessage!)),
           );
         }
 
@@ -72,12 +66,8 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
 
         if (survey == null) {
           return Scaffold(
-            appBar: AppBar(
-              title: const Text('Response Analysis'),
-            ),
-            body: const Center(
-              child: Text('Survey not found.'),
-            ),
+            appBar: AppBar(title: const Text('Response Analysis')),
+            body: const Center(child: Text('Survey not found.')),
           );
         }
 
@@ -117,10 +107,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
               children: [
                 const Text(
                   'Responses',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -137,10 +124,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
         const SizedBox(height: 24),
         const Text(
           'Question Responses',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         ...survey.questions.map(_buildQuestionSummary),
@@ -149,12 +133,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
   }
 
   Widget _buildQuestionSummary(Question question) {
-    final responses = _viewModel.responses;
-
-    final answers = responses
-        .map((response) => response.answers[question.id])
-        .where((answer) => answer != null)
-        .toList();
+    final answers = _viewModel.getAnswersForQuestion(question.id);
 
     if (question.type == QuestionType.shortAnswer ||
         question.type == QuestionType.paragraph) {
@@ -170,10 +149,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
     return const SizedBox.shrink();
   }
 
-  Widget _buildOpenEndedQuestion(
-      Question question,
-      List<dynamic> answers,
-      ) {
+  Widget _buildOpenEndedQuestion(Question question, List<dynamic> answers) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
@@ -183,9 +159,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
           children: [
             Text(
               question.text,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             if (answers.isEmpty)
@@ -197,9 +171,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
                   margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Theme.of(context).dividerColor,
-                    ),
+                    border: Border.all(color: Theme.of(context).dividerColor),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(answer.toString()),
@@ -211,27 +183,17 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
     );
   }
 
-  Widget _buildChoiceChart(
-      Question question,
-      List<dynamic> answers,
-      ) {
+  Widget _buildChoiceChart(Question question, List<dynamic> answers) {
     final counts = <String, int>{};
 
-    for (final option in question.options) {
-      counts[option] = 0;
-    }
-
     if (question.type == QuestionType.linearScale) {
-      for (var value = question.scaleMin;
-      value <= question.scaleMax;
-      value++) {
-        final description = question.scaleLabels[value];
-
-        final label = description == null || description.isEmpty
-            ? value.toString()
-            : '$value — $description';
-
+      for (var value = question.scaleMin; value <= question.scaleMax; value++) {
+        final label = _getLinearScaleLabel(question, value);
         counts[label] = 0;
+      }
+    } else {
+      for (final option in question.options) {
+        counts[option] = 0;
       }
     }
 
@@ -243,30 +205,19 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
         }
       } else {
         String key;
-
         if (question.type == QuestionType.linearScale) {
-          final value = int.tryParse(answer.toString());
-          final description =
-          value == null ? null : question.scaleLabels[value];
-
-          key = value != null &&
-              description != null &&
-              description.isNotEmpty
-              ? '$value — $description'
-              : answer.toString();
+          final value = int.tryParse(answer.toString()) ?? 0;
+          key = _getLinearScaleLabel(question, value);
         } else {
           key = answer.toString();
         }
-
         counts[key] = (counts[key] ?? 0) + 1;
       }
     }
 
     final maxCount = counts.values.isEmpty
         ? 1
-        : counts.values.reduce(
-          (a, b) => a > b ? a : b,
-    );
+        : counts.values.reduce((a, b) => a > b ? a : b);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -277,9 +228,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
           children: [
             Text(
               question.text,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             if (counts.isEmpty)
@@ -292,24 +241,17 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        mainAxisAlignment:
-                        MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(
-                            child: Text(entry.key),
-                          ),
+                          Expanded(child: Text(entry.key)),
                           Text(
                             '${entry.value}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
                       const SizedBox(height: 4),
-                      LinearProgressIndicator(
-                        value: entry.value / maxCount,
-                      ),
+                      LinearProgressIndicator(value: entry.value / maxCount),
                     ],
                   ),
                 ),
@@ -320,13 +262,21 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
     );
   }
 
+  String _getLinearScaleLabel(Question question, int value) {
+    if (value == question.scaleMin && question.scaleMinLabel.isNotEmpty) {
+      return '$value (${question.scaleMinLabel})';
+    }
+    if (value == question.scaleMax && question.scaleMaxLabel.isNotEmpty) {
+      return '$value (${question.scaleMaxLabel})';
+    }
+    return value.toString();
+  }
+
   Widget _buildIndividualResponses(Survey survey) {
     final responses = _viewModel.responses;
 
     if (responses.isEmpty) {
-      return const Center(
-        child: Text('No responses yet.'),
-      );
+      return const Center(child: Text('No responses yet.'));
     }
 
     return ListView.builder(
@@ -338,20 +288,14 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
           child: ExpansionTile(
-            title: Text(
-              _respondentTitle(response),
-            ),
+            title: Text(_respondentTitle(response)),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  _formatDate(response.submittedAt),
-                ),
+                Text(_formatDate(response.submittedAt)),
                 if (response.respondentEmail != null &&
                     response.respondentEmail!.trim().isNotEmpty)
-                  Text(
-                    response.respondentEmail!,
-                  ),
+                  Text(response.respondentEmail!),
               ],
             ),
             children: [
@@ -360,7 +304,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: survey.questions.map((question) {
-                    final answer = response.answers[question.id];
+                    final answer = _getAnswerForQuestion(response, question.id);
 
                     return Padding(
                       padding: const EdgeInsets.only(top: 12),
@@ -369,9 +313,7 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
                         children: [
                           Text(
                             question.text,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 4),
                           Text(
@@ -392,7 +334,17 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
     );
   }
 
-  String _respondentTitle(dynamic response) {
+  dynamic _getAnswerForQuestion(SurveyResponse response, String questionId) {
+    try {
+      return response.answers
+          .firstWhere((a) => a.questionId == questionId)
+          .value;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String _respondentTitle(SurveyResponse response) {
     if (response.respondentName != null &&
         response.respondentName!.trim().isNotEmpty) {
       return response.respondentName!;
@@ -411,11 +363,10 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
       return 'No answer';
     }
 
-    if (question.type == QuestionType.linearScale && answer is int) {
-      final label = question.scaleLabels[answer];
-
-      if (label != null && label.isNotEmpty) {
-        return '$answer — $label';
+    if (question.type == QuestionType.linearScale) {
+      final value = int.tryParse(answer.toString());
+      if (value != null) {
+        return _getLinearScaleLabel(question, value);
       }
     }
 
