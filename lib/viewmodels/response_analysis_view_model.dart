@@ -11,12 +11,10 @@ class ResponseAnalysisViewModel extends ChangeNotifier {
   final String _surveyId;
 
   ResponseAnalysisViewModel({
-    required SurveyRepository surveyRepository,
-    required ResponseRepository responseRepository,
-    required String surveyId,
-  }) : _surveyRepository = surveyRepository,
-       _responseRepository = responseRepository,
-       _surveyId = surveyId;
+    required this._surveyRepository,
+    required this._responseRepository,
+    required this._surveyId,
+  });
 
   Survey? _survey;
   List<SurveyResponse> _responses = [];

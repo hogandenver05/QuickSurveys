@@ -33,7 +33,7 @@ class InMemorySurveyRepository implements SurveyRepository {
   @override
   Future<void> updateSurvey(Survey survey) async {
     final index = _surveys.indexWhere(
-          (existingSurvey) => existingSurvey.id == survey.id,
+      (existingSurvey) => existingSurvey.id == survey.id,
     );
 
     if (index == -1) {
@@ -54,15 +54,11 @@ class InMemorySurveyRepository implements SurveyRepository {
   }) async {
     final surveys = _surveys
         .where(
-          (survey) =>
-      survey.isPublished &&
-          survey.createdBy != excludeUserId,
-    )
+          (survey) => survey.isPublished && survey.createdBy != excludeUserId,
+        )
         .toList();
 
-    surveys.sort(
-          (a, b) => b.createdAt.compareTo(a.createdAt),
-    );
+    surveys.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     return surveys;
   }

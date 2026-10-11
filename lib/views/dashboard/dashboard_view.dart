@@ -42,6 +42,9 @@ class _DashboardViewState extends State<DashboardView>
       authRepository: widget.authRepository,
     );
 
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_handleTabChange);
+
     _viewModel.loadSurveys();
   }
 
@@ -127,9 +130,7 @@ class _DashboardViewState extends State<DashboardView>
       builder: (context) {
         return AlertDialog(
           title: const Text('Delete survey?'),
-          content: Text(
-            'This will permanently delete "${survey.title}".',
-          ),
+          content: Text('This will permanently delete "${survey.title}".'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
@@ -162,21 +163,27 @@ class _DashboardViewState extends State<DashboardView>
             onPressed: () => _viewModel.signOut(),
           ),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(icon: Icon(Icons.assignment_outlined), text: 'My Surveys'),
+            Tab(icon: Icon(Icons.explore_outlined), text: 'Explore Surveys'),
+          ],
+        ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _createSurvey,
-        icon: const Icon(Icons.add),
-        label: const Text('Create Survey'),
-      )
+      floatingActionButton: _currentTabIndex == 0
+          ? FloatingActionButton.extended(
+              onPressed: _createSurvey,
+              icon: const Icon(Icons.add),
+              label: const Text('Create Survey'),
+            )
           : null,
 
       body: AnimatedBuilder(
         animation: _viewModel,
         builder: (context, _) {
           if (_viewModel.isLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (_viewModel.errorMessage != null) {
@@ -194,10 +201,7 @@ class _DashboardViewState extends State<DashboardView>
 
           return TabBarView(
             controller: _tabController,
-            children: [
-              _buildMySurveys(),
-              _buildExploreSurveys(),
-            ],
+            children: [_buildMySurveys(), _buildExploreSurveys()],
           );
         },
       ),
@@ -242,12 +246,12 @@ class _DashboardViewState extends State<DashboardView>
               prefixIcon: const Icon(Icons.search),
               suffixIcon: _viewModel.searchQuery.isNotEmpty
                   ? IconButton(
-                tooltip: 'Clear search',
-                onPressed: () {
-                  _viewModel.setSearchQuery('');
-                },
-                icon: const Icon(Icons.clear),
-              )
+                      tooltip: 'Clear search',
+                      onPressed: () {
+                        _viewModel.setSearchQuery('');
+                      },
+                      icon: const Icon(Icons.clear),
+                    )
                   : null,
               border: const OutlineInputBorder(),
             ),
@@ -257,26 +261,26 @@ class _DashboardViewState extends State<DashboardView>
         Expanded(
           child: surveys.isEmpty
               ? _ExploreEmptyState(
-            isSearching: _viewModel.searchQuery.isNotEmpty,
-          )
+                  isSearching: _viewModel.searchQuery.isNotEmpty,
+                )
               : RefreshIndicator(
-            onRefresh: _viewModel.loadSurveys,
-            child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              itemCount: surveys.length,
-              itemBuilder: (context, index) {
-                final survey = surveys[index];
+                  onRefresh: _viewModel.loadSurveys,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    itemCount: surveys.length,
+                    itemBuilder: (context, index) {
+                      final survey = surveys[index];
 
-                return _ExploreSurveyCard(
-                  survey: survey,
-                  creatorName: _viewModel.getCreatorName(
-                    survey.createdBy,
+                      return _ExploreSurveyCard(
+                        survey: survey,
+                        creatorName: _viewModel.getCreatorName(
+                          survey.createdBy,
+                        ),
+                        onTakeSurvey: () => _openSurvey(survey),
+                      );
+                    },
                   ),
-                  onTakeSurvey: () => _openSurvey(survey),
-                );
-              },
-            ),
-          ),
+                ),
         ),
       ],
     );
@@ -292,22 +296,14 @@ class _EmptyDashboard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.assignment_outlined,
-            size: 64,
-          ),
+          Icon(Icons.assignment_outlined, size: 64),
           SizedBox(height: 16),
           Text(
             'No surveys yet',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 8),
-          Text(
-            'Create your first survey to get started.',
-          ),
+          Text('Create your first survey to get started.'),
         ],
       ),
     );
@@ -317,9 +313,7 @@ class _EmptyDashboard extends StatelessWidget {
 class _ExploreEmptyState extends StatelessWidget {
   final bool isSearching;
 
-  const _ExploreEmptyState({
-    required this.isSearching,
-  });
+  const _ExploreEmptyState({required this.isSearching});
 
   @override
   Widget build(BuildContext context) {
@@ -330,20 +324,13 @@ class _ExploreEmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              isSearching
-                  ? Icons.search_off
-                  : Icons.explore_outlined,
+              isSearching ? Icons.search_off : Icons.explore_outlined,
               size: 64,
             ),
             const SizedBox(height: 16),
             Text(
-              isSearching
-                  ? 'No matching surveys'
-                  : 'No surveys to explore',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              isSearching ? 'No matching surveys' : 'No surveys to explore',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
@@ -380,9 +367,7 @@ class _SurveyCard extends StatelessWidget {
         contentPadding: const EdgeInsets.all(16),
         title: Text(
           survey.title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 8),
@@ -398,17 +383,11 @@ class _SurveyCard extends StatelessWidget {
               Row(
                 children: [
                   Icon(
-                    survey.isPublished
-                        ? Icons.public
-                        : Icons.edit_note,
+                    survey.isPublished ? Icons.public : Icons.edit_note,
                     size: 16,
                   ),
                   const SizedBox(width: 4),
-                  Text(
-                    survey.isPublished
-                        ? 'Published'
-                        : 'Draft',
-                  ),
+                  Text(survey.isPublished ? 'Published' : 'Draft'),
                 ],
               ),
             ],
@@ -417,7 +396,6 @@ class _SurveyCard extends StatelessWidget {
         trailing: PopupMenuButton<String>(
           onSelected: (value) {
             switch (value) {
-
               case 'analyze':
                 onAnalyze();
                 break;
@@ -433,7 +411,6 @@ class _SurveyCard extends StatelessWidget {
           },
           itemBuilder: (context) {
             return const [
-              PopupMenuItem(value: 'open', child: Text('Open Survey')),
               PopupMenuItem(value: 'analyze', child: Text('Analyze Responses')),
               PopupMenuItem(value: 'edit', child: Text('Edit')),
               PopupMenuItem(value: 'delete', child: Text('Delete')),
@@ -467,25 +444,17 @@ class _ExploreSurveyCard extends StatelessWidget {
           children: [
             Text(
               survey.title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 6),
 
             Row(
               children: [
-                const Icon(
-                  Icons.person_outline,
-                  size: 18,
-                ),
+                const Icon(Icons.person_outline, size: 18),
                 const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    'Created by: $creatorName',
-                  ),
-                ),
+                Expanded(child: Text('Created by: $creatorName')),
               ],
             ),
 

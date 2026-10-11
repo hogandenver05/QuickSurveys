@@ -11,10 +11,8 @@ class SurveyBuilderViewModel extends ChangeNotifier {
   SurveyBuilderViewModel({
     required this._surveyRepository,
     Survey? existingSurvey,
-    String currentUserId = '',
-  }) : _surveyRepository = surveyRepository,
-       _existingSurvey = existingSurvey,
-       _currentUserId = currentUserId {
+    this._currentUserId = '',
+  }) : _existingSurvey = existingSurvey {
     _title = existingSurvey?.title ?? '';
     _description = existingSurvey?.description ?? '';
 

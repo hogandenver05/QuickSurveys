@@ -8,12 +8,13 @@ import '../repositories/auth_repository.dart';
 class DashboardViewModel extends ChangeNotifier {
   final SurveyRepository _surveyRepository;
   final AuthRepository _authRepository;
+  final FirebaseFirestore _firestore;
 
   DashboardViewModel({
-    required SurveyRepository surveyRepository,
-    required AuthRepository authRepository,
-  }) : _surveyRepository = surveyRepository,
-       _authRepository = authRepository;
+    required this._surveyRepository,
+    required this._authRepository,
+    FirebaseFirestore? firestore,
+  }) : _firestore = firestore ?? FirebaseFirestore.instance;
 
   List<Survey> _surveys = [];
   List<Survey> _otherSurveys = [];
@@ -60,6 +61,7 @@ class DashboardViewModel extends ChangeNotifier {
 
   Future<void> loadSurveys() async {
     final user = _authRepository.currentUser;
+
     if (user == null) {
       _errorMessage = 'User not authenticated.';
       notifyListeners();
@@ -70,7 +72,14 @@ class DashboardViewModel extends ChangeNotifier {
 
     try {
       _errorMessage = null;
+
       _surveys = await _surveyRepository.getSurveysForUser(user.id);
+
+      _otherSurveys = await _surveyRepository.getPublishedSurveys(
+        excludeUserId: user.id,
+      );
+
+      await _loadCreatorNames();
     } catch (e) {
       debugPrint('Error loading surveys: $e');
       _errorMessage = 'Unable to load surveys: $e';
@@ -89,10 +98,7 @@ class DashboardViewModel extends ChangeNotifier {
 
     for (final creatorId in creatorIds) {
       try {
-        final doc = await _firestore
-            .collection('users')
-            .doc(creatorId)
-            .get();
+        final doc = await _firestore.collection('users').doc(creatorId).get();
 
         if (doc.exists) {
           final data = doc.data();
