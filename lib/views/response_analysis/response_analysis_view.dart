@@ -263,12 +263,26 @@ class _ResponseAnalysisViewState extends State<ResponseAnalysisView> {
   }
 
   String _getLinearScaleLabel(Question question, int value) {
+    final index = value - question.scaleMin;
+
+    // Use the individual label for this scale value.
+    if (index >= 0 && index < question.scaleLabels.length) {
+      final label = question.scaleLabels[index].trim();
+
+      if (label.isNotEmpty) {
+        return '$value ($label)';
+      }
+    }
+
+    // Support older surveys with endpoint labels only.
     if (value == question.scaleMin && question.scaleMinLabel.isNotEmpty) {
       return '$value (${question.scaleMinLabel})';
     }
+
     if (value == question.scaleMax && question.scaleMaxLabel.isNotEmpty) {
       return '$value (${question.scaleMaxLabel})';
     }
+
     return value.toString();
   }
 

@@ -380,6 +380,12 @@ class _QuestionDialogState extends State<_QuestionDialog> {
   final TextEditingController _scaleMaxLabelController =
       TextEditingController();
 
+  // Keep controllers keyed by numeric scale value so labels survive range edits.
+  final Map<int, TextEditingController> _scaleLabelControllers = {};
+
+  TextEditingController _labelControllerFor(int value) =>
+      _scaleLabelControllers.putIfAbsent(value, () => TextEditingController());
+
   bool get _hasOptions =>
       _type == QuestionType.multipleChoice || _type == QuestionType.checkboxes;
 
@@ -417,6 +423,17 @@ class _QuestionDialogState extends State<_QuestionDialog> {
       _scaleMaxController.text = question.scaleMax.toString();
       _scaleMinLabelController.text = question.scaleMinLabel;
       _scaleMaxLabelController.text = question.scaleMaxLabel;
+      for (var value = question.scaleMin; value <= question.scaleMax; value++) {
+        final index = value - question.scaleMin;
+        final label = index < question.scaleLabels.length
+            ? question.scaleLabels[index]
+            : (value == question.scaleMin
+                  ? question.scaleMinLabel
+                  : value == question.scaleMax
+                  ? question.scaleMaxLabel
+                  : '');
+        _labelControllerFor(value).text = label;
+      }
     }
   }
 
@@ -432,6 +449,9 @@ class _QuestionDialogState extends State<_QuestionDialog> {
     _scaleMaxController.dispose();
     _scaleMinLabelController.dispose();
     _scaleMaxLabelController.dispose();
+    for (final controller in _scaleLabelControllers.values) {
+      controller.dispose();
+    }
 
     super.dispose();
   }
@@ -548,6 +568,7 @@ class _QuestionDialogState extends State<_QuestionDialog> {
                     child: TextField(
                       controller: _scaleMinController,
                       keyboardType: TextInputType.number,
+                      onChanged: (_) => setState(() {}),
                       decoration: const InputDecoration(
                         labelText: 'Minimum',
                         border: OutlineInputBorder(),
@@ -564,6 +585,7 @@ class _QuestionDialogState extends State<_QuestionDialog> {
                     child: TextField(
                       controller: _scaleMaxController,
                       keyboardType: TextInputType.number,
+                      onChanged: (_) => setState(() {}),
                       decoration: const InputDecoration(
                         labelText: 'Maximum',
                         border: OutlineInputBorder(),
@@ -575,24 +597,38 @@ class _QuestionDialogState extends State<_QuestionDialog> {
 
               const SizedBox(height: 16),
 
-              TextField(
-                controller: _scaleMinLabelController,
-                decoration: const InputDecoration(
-                  labelText: 'Minimum value description',
-                  hintText: 'e.g. Not satisfied',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              TextField(
-                controller: _scaleMaxLabelController,
-                decoration: const InputDecoration(
-                  labelText: 'Maximum value description',
-                  hintText: 'e.g. Very satisfied',
-                  border: OutlineInputBorder(),
-                ),
+              Builder(
+                builder: (context) {
+                  final min = int.tryParse(_scaleMinController.text);
+                  final max = int.tryParse(_scaleMaxController.text);
+                  if (min == null ||
+                      max == null ||
+                      min >= max ||
+                      max - min > 20) {
+                    return const Text(
+                      'Enter a valid range (maximum greater than minimum, up to 21 values).',
+                    );
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      for (var value = min; value <= max; value++) ...[
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: TextField(
+                            key: ValueKey('scale-label-$value'),
+                            controller: _labelControllerFor(value),
+                            decoration: InputDecoration(
+                              labelText: 'Label for $value',
+                              hintText: 'Optional description',
+                              border: const OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  );
+                },
               ),
             ],
 
@@ -654,17 +690,28 @@ class _QuestionDialogState extends State<_QuestionDialog> {
     int scaleMax = 5;
     String scaleMinLabel = '';
     String scaleMaxLabel = '';
+    List<String> scaleLabels = const [];
 
     if (_hasLinearScale) {
       scaleMin = int.tryParse(_scaleMinController.text) ?? 1;
       scaleMax = int.tryParse(_scaleMaxController.text) ?? 5;
-      scaleMinLabel = _scaleMinLabelController.text.trim();
-      scaleMaxLabel = _scaleMaxLabelController.text.trim();
+      scaleLabels = [
+        for (
+          var value = scaleMin;
+          value <= scaleMax && value <= scaleMin + 20;
+          value++
+        )
+          _labelControllerFor(value).text.trim(),
+      ];
+      scaleMinLabel = scaleLabels.isNotEmpty ? scaleLabels.first : '';
+      scaleMaxLabel = scaleLabels.isNotEmpty ? scaleLabels.last : '';
 
-      if (scaleMin >= scaleMax) {
+      if (scaleMin >= scaleMax || scaleMax - scaleMin > 20) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Maximum must be greater than minimum.'),
+            content: Text(
+              'Maximum must be greater than minimum (up to 21 values).',
+            ),
           ),
         );
         return;
@@ -683,6 +730,7 @@ class _QuestionDialogState extends State<_QuestionDialog> {
       scaleMax: scaleMax,
       scaleMinLabel: scaleMinLabel,
       scaleMaxLabel: scaleMaxLabel,
+      scaleLabels: scaleLabels,
     );
 
     Navigator.of(context).pop(question);
