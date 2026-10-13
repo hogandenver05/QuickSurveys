@@ -236,20 +236,22 @@ class _SurveyResponseViewState extends State<SurveyResponseView> {
       case QuestionType.multipleChoice:
         final selected = widget.viewModel.answers[question.id] as String?;
 
-        return Column(
-          children: question.options.map((option) {
-            return RadioListTile<String>(
-              title: Text(option),
-              value: option,
-              groupValue: selected,
-              contentPadding: EdgeInsets.zero,
-              onChanged: (value) {
-                if (value != null) {
-                  widget.viewModel.setAnswer(question.id, value);
-                }
-              },
-            );
-          }).toList(),
+        return RadioGroup<String>(
+          groupValue: selected,
+          onChanged: (value) {
+            if (value != null) {
+              widget.viewModel.setAnswer(question.id, value);
+            }
+          },
+          child: Column(
+            children: question.options.map((option) {
+              return RadioListTile<String>(
+                title: Text(option),
+                value: option,
+                contentPadding: EdgeInsets.zero,
+              );
+            }).toList(),
+          ),
         );
 
       case QuestionType.checkboxes:
@@ -288,50 +290,41 @@ class _SurveyResponseViewState extends State<SurveyResponseView> {
             value,
         ];
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: scaleValues.map((value) {
-                String label = '';
-                if (value == question.scaleMin) {
-                  label = question.scaleMinLabel;
-                } else if (value == question.scaleMax) {
-                  label = question.scaleMaxLabel;
-                }
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: scaleValues.map((value) {
+              final index = value - question.scaleMin;
+              final label = index < question.scaleLabels.length
+                  ? question.scaleLabels[index]
+                  : value == question.scaleMin
+                  ? question.scaleMinLabel
+                  : value == question.scaleMax
+                  ? question.scaleMaxLabel
+                  : '';
 
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: 40,
-                          child: Center(
-                            child: Text(
-                              label,
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        ChoiceChip(
-                          label: Text(value.toString()),
-                          selected: selected == value,
-                          onSelected: (_) {
-                            widget.viewModel.setAnswer(question.id, value);
-                          },
-                        ),
-                      ],
-                    ),
+              return SizedBox(
+                width: 104,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Column(
+                    children: [
+                      Text(label, textAlign: TextAlign.center, softWrap: true),
+                      const SizedBox(height: 8),
+                      ChoiceChip(
+                        label: Text(value.toString()),
+                        selected: selected == value,
+                        onSelected: (_) {
+                          widget.viewModel.setAnswer(question.id, value);
+                        },
+                      ),
+                    ],
                   ),
-                );
-              }).toList(),
-            ),
-          ],
+                ),
+              );
+            }).toList(),
+          ),
         );
     }
   }

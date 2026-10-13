@@ -9,12 +9,10 @@ class SurveyBuilderViewModel extends ChangeNotifier {
   final String _currentUserId;
 
   SurveyBuilderViewModel({
-    required SurveyRepository surveyRepository,
+    required this._surveyRepository,
     Survey? existingSurvey,
-    String currentUserId = '',
-  }) : _surveyRepository = surveyRepository,
-       _existingSurvey = existingSurvey,
-       _currentUserId = currentUserId {
+    this._currentUserId = '',
+  }) : _existingSurvey = existingSurvey {
     _title = existingSurvey?.title ?? '';
     _description = existingSurvey?.description ?? '';
 
@@ -120,10 +118,6 @@ class SurveyBuilderViewModel extends ChangeNotifier {
   }
 
   void reorderQuestions(int oldIndex, int newIndex) {
-    if (newIndex > oldIndex) {
-      newIndex -= 1;
-    }
-
     final question = _questions.removeAt(oldIndex);
     _questions.insert(newIndex, question);
 

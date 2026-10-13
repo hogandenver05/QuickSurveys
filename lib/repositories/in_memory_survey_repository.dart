@@ -47,4 +47,19 @@ class InMemorySurveyRepository implements SurveyRepository {
   Future<void> deleteSurvey(String id) async {
     _surveys.removeWhere((survey) => survey.id == id);
   }
+
+  @override
+  Future<List<Survey>> getPublishedSurveys({
+    required String excludeUserId,
+  }) async {
+    final surveys = _surveys
+        .where(
+          (survey) => survey.isPublished && survey.createdBy != excludeUserId,
+        )
+        .toList();
+
+    surveys.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    return surveys;
+  }
 }

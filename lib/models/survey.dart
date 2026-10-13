@@ -132,6 +132,7 @@ class Question {
   final int scaleMax;
   final String scaleMinLabel;
   final String scaleMaxLabel;
+  final List<String> scaleLabels;
 
   const Question({
     required this.id,
@@ -143,6 +144,7 @@ class Question {
     this.scaleMax = 5,
     this.scaleMinLabel = '',
     this.scaleMaxLabel = '',
+    this.scaleLabels = const [],
   });
 
   factory Question.fromMap(Map<String, dynamic> map) {
@@ -161,6 +163,11 @@ class Question {
       scaleMax: map['scaleMax'] is int ? map['scaleMax'] : 5,
       scaleMinLabel: map['scaleMinLabel']?.toString() ?? '',
       scaleMaxLabel: map['scaleMaxLabel']?.toString() ?? '',
+      scaleLabels:
+          (map['scaleLabels'] as Iterable?)
+              ?.map((label) => label.toString())
+              .toList() ??
+          const [],
     );
   }
 
@@ -175,6 +182,7 @@ class Question {
       'scaleMax': scaleMax,
       'scaleMinLabel': scaleMinLabel,
       'scaleMaxLabel': scaleMaxLabel,
+      'scaleLabels': scaleLabels,
     };
   }
 }
