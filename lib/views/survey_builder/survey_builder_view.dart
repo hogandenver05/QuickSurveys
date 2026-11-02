@@ -72,34 +72,63 @@ class _SurveyBuilderViewState extends State<SurveyBuilderView> {
       return;
     }
 
-    final surveyId = _viewModel.savedSurveyId;
+    final shareCode = _viewModel.publishedShareCode;
 
-    if (surveyId == null) {
+    if (shareCode == null || shareCode.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to retrieve survey share code.')),
+      );
       return;
     }
 
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
-        final surveyUrl =
-            'https://quicksurveys.app/survey/${_viewModel.savedSurveyId}';
-
         return AlertDialog(
           title: const Text('Survey Published'),
-          content: SelectableText(surveyUrl),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.check_circle_outline,
+                color: Colors.green,
+                size: 56,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Your survey has been published!',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Share this code with others so they can find your survey:',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              SelectableText(
+                shareCode,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 3,
+                ),
+              ),
+            ],
+          ),
           actions: [
             TextButton.icon(
               onPressed: () async {
-                await Clipboard.setData(ClipboardData(text: surveyUrl));
+                await Clipboard.setData(ClipboardData(text: shareCode));
 
                 if (dialogContext.mounted) {
                   ScaffoldMessenger.of(dialogContext).showSnackBar(
-                    const SnackBar(content: Text('Survey link copied.')),
+                    const SnackBar(content: Text('Survey code copied!')),
                   );
                 }
               },
               icon: const Icon(Icons.copy),
-              label: const Text('Copy Link'),
+              label: const Text('Copy Code'),
             ),
             TextButton(
               onPressed: () {

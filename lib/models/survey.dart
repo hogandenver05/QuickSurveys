@@ -18,6 +18,7 @@ class Survey {
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<Question> questions;
+  final String shareCode;
 
   // Survey settings
   final bool allowAnonymousResponses;
@@ -33,6 +34,7 @@ class Survey {
     required this.createdAt,
     required this.updatedAt,
     this.questions = const [],
+    this.shareCode = '',
     this.allowAnonymousResponses = true,
     this.requireRespondentName = false,
     this.requireRespondentEmail = false,
@@ -54,6 +56,7 @@ class Survey {
         createdBy: map['createdBy']?.toString() ?? '',
         createdAt: parseDateTime(map['createdAt']),
         updatedAt: parseDateTime(map['updatedAt']),
+        shareCode: map['shareCode']?.toString() ?? '',
         questions:
             (map['questions'] as Iterable?)
                 ?.map(
@@ -81,6 +84,7 @@ class Survey {
       'createdBy': createdBy,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'shareCode': shareCode,
       'questions': questions.map((q) => q.toMap()).toList(),
       'allowAnonymousResponses': allowAnonymousResponses,
       'requireRespondentName': requireRespondentName,
@@ -96,6 +100,7 @@ class Survey {
     String? createdBy,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? shareCode,
     List<Question>? questions,
     bool? allowAnonymousResponses,
     bool? requireRespondentName,
@@ -109,6 +114,7 @@ class Survey {
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      shareCode: shareCode ?? this.shareCode,
       questions: questions ?? this.questions,
       allowAnonymousResponses:
           allowAnonymousResponses ?? this.allowAnonymousResponses,
