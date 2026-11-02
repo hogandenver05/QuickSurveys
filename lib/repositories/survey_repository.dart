@@ -9,6 +9,8 @@ abstract interface class SurveyRepository {
 
   Future<Survey?> getSurvey(String id);
 
+  Future<Survey?> getSurveyByCode(String code);
+
   Future<void> createSurvey(Survey survey);
 
   Future<void> updateSurvey(Survey survey);

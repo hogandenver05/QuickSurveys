@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../models/survey.dart';
 import '../repositories/survey_repository.dart';
+import '../utils/survey_code_generator.dart';
 
 class SurveyBuilderViewModel extends ChangeNotifier {
   final SurveyRepository _surveyRepository;
@@ -35,12 +36,14 @@ class SurveyBuilderViewModel extends ChangeNotifier {
   bool _isSaving = false;
   String? _errorMessage;
   String? _savedSurveyId;
+  String? _publishedShareCode;
 
   String get title => _title;
   String get description => _description;
   bool get isSaving => _isSaving;
   String? get errorMessage => _errorMessage;
   String? get savedSurveyId => _savedSurveyId;
+  String? get publishedShareCode => _publishedShareCode;
 
   bool get isEditing => _existingSurvey != null;
 
@@ -190,6 +193,10 @@ class SurveyBuilderViewModel extends ChangeNotifier {
       _errorMessage = null;
       final now = DateTime.now();
 
+      final shareCode = _existingSurvey?.shareCode.isNotEmpty == true
+          ? _existingSurvey!.shareCode
+          : SurveyCodeGenerator.generate();
+
       final survey =
           _existingSurvey?.copyWith(
             title: _title.trim(),
@@ -200,6 +207,7 @@ class SurveyBuilderViewModel extends ChangeNotifier {
             requireRespondentEmail: _requireRespondentEmail,
             isPublished: true,
             updatedAt: now,
+            shareCode: shareCode,
           ) ??
           Survey(
             id: now.microsecondsSinceEpoch.toString(),
@@ -213,6 +221,7 @@ class SurveyBuilderViewModel extends ChangeNotifier {
             createdBy: _currentUserId,
             createdAt: now,
             updatedAt: now,
+            shareCode: shareCode,
           );
 
       if (isEditing) {
@@ -222,6 +231,7 @@ class SurveyBuilderViewModel extends ChangeNotifier {
       }
 
       _savedSurveyId = survey.id;
+      _publishedShareCode = survey.shareCode;
 
       return true;
     } catch (e) {
