@@ -62,4 +62,22 @@ class InMemorySurveyRepository implements SurveyRepository {
 
     return surveys;
   }
+
+  @override
+  Future<Survey?> getSurveyByCode(String code) async {
+    final normalizedCode = code.trim().toUpperCase();
+
+    if (normalizedCode.isEmpty) {
+      return null;
+    }
+
+    for (final survey in await getSurveys()) {
+      if (survey.isPublished &&
+          survey.shareCode.toUpperCase() == normalizedCode) {
+        return survey;
+      }
+    }
+
+    return null;
+  }
 }

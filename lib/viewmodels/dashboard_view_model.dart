@@ -44,9 +44,15 @@ class DashboardViewModel extends ChangeNotifier {
 
     return _otherSurveys.where((survey) {
       final title = survey.title.toLowerCase();
-      final creatorName = getCreatorName(survey.createdBy).toLowerCase();
 
-      return title.contains(query) || creatorName.contains(query);
+      final creatorName =
+      getCreatorName(survey.createdBy).toLowerCase();
+
+      final shareCode = survey.shareCode.toLowerCase();
+
+      return title.contains(query) ||
+          creatorName.contains(query) ||
+          shareCode.contains(query);
     }).toList();
   }
 

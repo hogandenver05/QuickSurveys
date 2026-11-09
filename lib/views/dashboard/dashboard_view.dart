@@ -242,7 +242,7 @@ class _DashboardViewState extends State<DashboardView>
           child: TextField(
             onChanged: _viewModel.setSearchQuery,
             decoration: InputDecoration(
-              hintText: 'Search surveys or creators...',
+              hintText: 'Search surveys, creators, or codes...',
               prefixIcon: const Icon(Icons.search),
               suffixIcon: _viewModel.searchQuery.isNotEmpty
                   ? IconButton(
@@ -335,7 +335,7 @@ class _ExploreEmptyState extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               isSearching
-                  ? 'Try searching for another survey or creator.'
+                  ? 'Try another survey title, creator, or share code.'
                   : 'Published surveys from other users will appear here.',
               textAlign: TextAlign.center,
             ),

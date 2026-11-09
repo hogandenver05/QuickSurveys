@@ -76,4 +76,27 @@ class FirestoreSurveyRepository implements SurveyRepository {
     surveys.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return surveys;
   }
+
+  @override
+  Future<Survey?> getSurveyByCode(String code) async {
+    final normalizedCode = code.trim().toUpperCase();
+
+    if (normalizedCode.isEmpty) {
+      return null;
+    }
+
+    final snapshot = await _surveysCollection
+        .where('shareCode', isEqualTo: normalizedCode)
+        .where('isPublished', isEqualTo: true)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) {
+      return null;
+    }
+
+    final doc = snapshot.docs.first;
+
+    return Survey.fromMap(doc.data(), doc.id);
+  }
 }
