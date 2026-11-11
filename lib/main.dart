@@ -12,6 +12,7 @@ import 'repositories/response_repository.dart';
 import 'repositories/firestore_response_repository.dart';
 import 'views/dashboard/dashboard_view.dart';
 import 'views/auth/auth_view.dart';
+import 'views/auth/email_verification_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -62,6 +63,10 @@ class QuickSurveysApp extends StatelessWidget {
           final user = snapshot.data;
           if (user == null) {
             return const AuthView();
+          }
+
+          if (!authRepository.isEmailVerified) {
+            return const EmailVerificationView();
           }
 
           return DashboardView(
