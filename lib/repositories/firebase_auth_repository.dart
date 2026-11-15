@@ -19,6 +19,10 @@ class FirebaseAuthRepository implements AuthRepository {
   StreamSubscription<User?>? _authSubscription;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _docSubscription;
 
+  @override
+  bool get isEmailVerified =>
+      _firebaseAuth.currentUser?.emailVerified ?? false;
+
   FirebaseAuthRepository({
     FirebaseAuth? firebaseAuth,
     FirebaseFirestore? firestore,
@@ -30,7 +34,7 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   void _init() {
-    _authSubscription = _firebaseAuth.authStateChanges().listen((firebaseUser) {
+    _authSubscription = _firebaseAuth.userChanges().listen((firebaseUser) {
       _docSubscription?.cancel();
       if (firebaseUser == null) {
         _updateUser(null);
@@ -144,7 +148,49 @@ class FirebaseAuthRepository implements AuthRepository {
       );
 
       await _firestore.collection('users').doc(appUser.id).set(appUser.toMap());
+      await credential.user!.sendEmailVerification();
     }
+  }
+
+  @override
+  Future<void> sendEmailVerification() async {
+    final user = _firebaseAuth.currentUser;
+
+    if (user == null) {
+      throw Exception('No user is currently signed in.');
+    }
+
+    await user.reload();
+
+    final refreshedUser = _firebaseAuth.currentUser;
+
+    if (refreshedUser == null) {
+      throw Exception('Your session has expired. Please sign in again.');
+    }
+
+    if (!refreshedUser.emailVerified) {
+      await refreshedUser.sendEmailVerification();
+    }
+  }
+
+  @override
+  Future<bool> checkEmailVerification() async {
+    final user = _firebaseAuth.currentUser;
+
+    if (user == null) {
+      return false;
+    }
+
+    await user.reload();
+
+    final refreshedUser = _firebaseAuth.currentUser;
+
+    return refreshedUser?.emailVerified ?? false;
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _firebaseAuth.sendPasswordResetEmail(email: email.trim());
   }
 
   @override

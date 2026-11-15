@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../repositories/auth_repository.dart';
+import 'forgot_password_view.dart';
 
 class AuthView extends StatefulWidget {
   const AuthView({super.key});
@@ -149,6 +150,17 @@ class _AuthViewState extends State<AuthView> {
                     ),
                   ),
                 ],
+                if (_isLogin)
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const ForgotPasswordView(),
+                        ),
+                      );
+                    },
+                    child: const Text('Forgot Password?'),
+                  ),
                 TextButton(
                   onPressed: () => setState(() => _isLogin = !_isLogin),
                   child: Text(

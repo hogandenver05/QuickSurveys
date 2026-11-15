@@ -14,6 +14,20 @@ class InMemoryAuthRepository implements AuthRepository {
   AppUser? get currentUser => _currentUser;
 
   @override
+  Future<void> sendEmailVerification() async {}
+
+  @override
+  Future<bool> checkEmailVerification() async {
+    return isEmailVerified;
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {}
+
+  @override
+  bool get isEmailVerified => true;
+
+  @override
   Future<void> signInWithEmailAndPassword(String email, String password) async {
     _currentUser = AppUser(
       id: 'test-user',
