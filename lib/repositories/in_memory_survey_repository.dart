@@ -49,6 +49,15 @@ class InMemorySurveyRepository implements SurveyRepository {
   }
 
   @override
+  Future<void> deleteAllSurveysForUser(String userId) async {
+    if (userId.trim().isEmpty) {
+      throw ArgumentError('User ID cannot be empty.');
+    }
+
+    _surveys.removeWhere((survey) => survey.createdBy == userId);
+  }
+
+  @override
   Future<List<Survey>> getPublishedSurveys({
     required String excludeUserId,
   }) async {

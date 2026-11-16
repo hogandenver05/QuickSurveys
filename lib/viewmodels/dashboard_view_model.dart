@@ -139,9 +139,76 @@ class DashboardViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> deleteAllSurveysForCurrentUser() async {
+    final user = _authRepository.currentUser;
+
+    if (user == null) {
+      _errorMessage = 'User not authenticated.';
+      notifyListeners();
+      return;
+    }
+
+    _setLoading(true);
+
+    try {
+      _errorMessage = null;
+
+      await _surveyRepository.deleteAllSurveysForUser(user.id);
+
+      // Refresh both dashboard tabs.
+      _surveys = await _surveyRepository.getSurveysForUser(user.id);
+
+      _otherSurveys = await _surveyRepository.getPublishedSurveys(
+        excludeUserId: user.id,
+      );
+
+      await _loadCreatorNames();
+    } catch (e) {
+      debugPrint('Error deleting all surveys: $e');
+      _errorMessage = 'Unable to delete all surveys: $e';
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+
+  Future<void> deleteAccount() async {
+    final user = _authRepository.currentUser;
+
+    if (user == null) {
+      _errorMessage = 'User not authenticated.';
+      notifyListeners();
+      throw Exception('User not authenticated.');
+    }
+
+    _setLoading(true);
+
+    try {
+      _errorMessage = null;
+
+      // Delete the user's surveys and their associated responses.
+      await _surveyRepository.deleteAllSurveysForUser(user.id);
+
+      // Delete the Firestore profile and Firebase Authentication account.
+      await _authRepository.deleteAccount();
+
+      // Clear dashboard data after successful deletion.
+      _surveys = [];
+      _otherSurveys = [];
+      _creatorNames.clear();
+    } catch (e) {
+      debugPrint('Error deleting account: $e');
+      _errorMessage = 'Unable to delete account: $e';
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   Future<void> signOut() async {
     await _authRepository.signOut();
   }
+
 
   void _setLoading(bool value) {
     _isLoading = value;

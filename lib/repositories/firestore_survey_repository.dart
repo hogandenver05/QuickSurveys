@@ -2,12 +2,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/survey.dart';
 import 'survey_repository.dart';
+import 'response_repository.dart';
 
 class FirestoreSurveyRepository implements SurveyRepository {
   final FirebaseFirestore _firestore;
+  final ResponseRepository _responseRepository;
 
-  FirestoreSurveyRepository({FirebaseFirestore? firestore})
-    : _firestore = firestore ?? FirebaseFirestore.instance;
+  FirestoreSurveyRepository({
+    FirebaseFirestore? firestore,
+    required this._responseRepository,
+  }) : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _surveysCollection =>
       _firestore.collection('surveys');
@@ -58,6 +62,39 @@ class FirestoreSurveyRepository implements SurveyRepository {
   @override
   Future<void> deleteSurvey(String id) async {
     await _surveysCollection.doc(id).delete();
+  }
+
+  @override
+  Future<void> deleteAllSurveysForUser(String userId) async {
+    if (userId.trim().isEmpty) {
+      throw ArgumentError('User ID cannot be empty.');
+    }
+
+    // Retrieve only surveys created by this user.
+    final snapshot = await _surveysCollection
+        .where('createdBy', isEqualTo: userId)
+        .get();
+
+    // Delete responses before deleting their surveys.
+    for (final doc in snapshot.docs) {
+      await _responseRepository.deleteResponsesForSurvey(
+        doc.id,
+        userId,
+      );
+    }
+
+    // Delete surveys in batches of 450.
+    for (var i = 0; i < snapshot.docs.length; i += 450) {
+      final batch = _firestore.batch();
+
+      final documents = snapshot.docs.skip(i).take(450);
+
+      for (final doc in documents) {
+        batch.delete(doc.reference);
+      }
+
+      await batch.commit();
+    }
   }
 
   @override

@@ -1,3 +1,4 @@
+
 import '../models/survey.dart';
 
 abstract interface class SurveyRepository {
@@ -16,4 +17,7 @@ abstract interface class SurveyRepository {
   Future<void> updateSurvey(Survey survey);
 
   Future<void> deleteSurvey(String id);
+
+  Future<void> deleteAllSurveysForUser(String userId);
 }
+

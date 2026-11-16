@@ -23,6 +23,22 @@ class FirebaseAuthRepository implements AuthRepository {
   bool get isEmailVerified =>
       _firebaseAuth.currentUser?.emailVerified ?? false;
 
+  @override
+  bool get supportsPasswordReauthentication {
+    return _firebaseAuth.currentUser?.providerData.any(
+          (provider) => provider.providerId == 'password',
+    ) ??
+        false;
+  }
+
+  @override
+  bool get supportsGoogleReauthentication {
+    return _firebaseAuth.currentUser?.providerData.any(
+          (provider) => provider.providerId == 'google.com',
+    ) ??
+        false;
+  }
+
   FirebaseAuthRepository({
     FirebaseAuth? firebaseAuth,
     FirebaseFirestore? firestore,
@@ -191,6 +207,63 @@ class FirebaseAuthRepository implements AuthRepository {
   @override
   Future<void> sendPasswordResetEmail(String email) async {
     await _firebaseAuth.sendPasswordResetEmail(email: email.trim());
+  }
+
+  @override
+  Future<void> reauthenticateWithPassword(String password) async {
+    final user = _firebaseAuth.currentUser;
+
+    if (user == null || user.email == null) {
+      throw Exception('No email/password user is signed in.');
+    }
+
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: password,
+    );
+
+    await user.reauthenticateWithCredential(credential);
+  }
+
+  @override
+  Future<void> reauthenticateWithGoogle() async {
+    final user = _firebaseAuth.currentUser;
+
+    if (user == null) {
+      throw Exception('No user is currently signed in.');
+    }
+
+    final googleUser = await _googleSignIn.signIn();
+
+    if (googleUser == null) {
+      throw Exception('Google reauthentication was cancelled.');
+    }
+
+    final googleAuth = await googleUser.authentication;
+
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    await user.reauthenticateWithCredential(credential);
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    final user = _firebaseAuth.currentUser;
+
+    if (user == null) {
+      throw Exception('No user is currently signed in.');
+    }
+
+    // Delete the Firestore profile first, while authenticated.
+    await _firestore.collection('users').doc(user.uid).delete();
+
+    // Delete the Firebase Authentication account.
+    await user.delete();
+
+    await _googleSignIn.signOut();
   }
 
   @override

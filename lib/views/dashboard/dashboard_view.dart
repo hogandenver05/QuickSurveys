@@ -152,15 +152,234 @@ class _DashboardViewState extends State<DashboardView>
     await _viewModel.deleteSurvey(survey.id);
   }
 
+  Future<void> _deleteAllSurveys() async {
+    if (_viewModel.surveys.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You have no surveys to delete.'),
+        ),
+      );
+      return;
+    }
+
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete all your surveys?'),
+          content: const Text(
+            'This will permanently delete all surveys you created '
+                'and their associated responses. This action cannot be undone.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Delete All'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete != true || !mounted) {
+      return;
+    }
+
+    await _viewModel.deleteAllSurveysForCurrentUser();
+
+    if (!mounted) return;
+
+    if (_viewModel.errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_viewModel.errorMessage!),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('All your surveys and responses were deleted.'),
+        ),
+      );
+    }
+  }
+
+
+  Future<void> _deleteAccount() async {
+    // First, ask the user to confirm permanent account deletion.
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete your account?'),
+          content: const Text(
+            'This will permanently delete your account, all surveys '
+                'you created, and their associated responses. '
+                'You will not be able to recover this data.\n\n'
+                'Are you sure you want to continue?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Continue'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete != true || !mounted) {
+      return;
+    }
+
+    try {
+      // Reauthenticate using the user's available sign-in provider.
+      if (widget.authRepository.supportsPasswordReauthentication) {
+        final passwordController = TextEditingController();
+
+        final password = await showDialog<String>(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Confirm your password'),
+              content: TextField(
+                controller: passwordController,
+                obscureText: true,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                ),
+                onSubmitted: (value) {
+                  if (value.isNotEmpty) {
+                    Navigator.of(context).pop(value);
+                  }
+                },
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    if (passwordController.text.isNotEmpty) {
+                      Navigator.of(context).pop(
+                        passwordController.text,
+                      );
+                    }
+                  },
+                  child: const Text('Confirm'),
+                ),
+              ],
+            );
+          },
+        );
+
+        passwordController.dispose();
+
+        if (password == null || password.isEmpty || !mounted) {
+          return;
+        }
+
+        await widget.authRepository.reauthenticateWithPassword(password);
+      } else if (widget.authRepository.supportsGoogleReauthentication) {
+        await widget.authRepository.reauthenticateWithGoogle();
+      } else {
+        throw Exception(
+          'No supported reauthentication method is available.',
+        );
+      }
+
+      if (!mounted) return;
+
+      // Delete surveys, responses, profile, and authentication account.
+      await _viewModel.deleteAccount();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Your account has been deleted successfully.'),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unable to delete account: $e'),
+        ),
+      );
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('QuickSurveys'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => _viewModel.signOut(),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'delete_all') {
+                _deleteAllSurveys();
+              } else if (value == 'delete_account') {
+                _deleteAccount();
+              } else if (value == 'logout') {
+                _viewModel.signOut();
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: 'delete_all',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_forever, color: Colors.red),
+                    SizedBox(width: 8),
+                    Text('Delete All My Surveys'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'delete_account',
+                child: Row(
+                  children: [
+                    Icon(Icons.person_remove, color: Colors.red),
+                    SizedBox(width: 8),
+                    Text(
+                      'Delete Account',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout),
+                    SizedBox(width: 8),
+                    Text('Sign Out'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
         bottom: TabBar(

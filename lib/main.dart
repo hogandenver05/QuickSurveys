@@ -20,8 +20,12 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   final authRepository = FirebaseAuthRepository();
-  final surveyRepository = FirestoreSurveyRepository();
+
   final responseRepository = FirestoreResponseRepository();
+
+  final surveyRepository = FirestoreSurveyRepository(
+    responseRepository: responseRepository,
+  );
 
   runApp(
     MultiProvider(

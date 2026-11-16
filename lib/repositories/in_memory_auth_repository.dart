@@ -28,6 +28,12 @@ class InMemoryAuthRepository implements AuthRepository {
   bool get isEmailVerified => true;
 
   @override
+  bool get supportsPasswordReauthentication => true;
+
+  @override
+  bool get supportsGoogleReauthentication => true;
+
+  @override
   Future<void> signInWithEmailAndPassword(String email, String password) async {
     _currentUser = AppUser(
       id: 'test-user',
@@ -62,6 +68,22 @@ class InMemoryAuthRepository implements AuthRepository {
       createdAt: DateTime.now(),
     );
     _userController.add(_currentUser);
+  }
+
+  @override
+  Future<void> reauthenticateWithPassword(String password) async {
+    // No authentication required for the in-memory repository.
+  }
+
+  @override
+  Future<void> reauthenticateWithGoogle() async {
+    // No authentication required for the in-memory repository.
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    // Clear the in-memory user.
+    await signOut();
   }
 
   @override

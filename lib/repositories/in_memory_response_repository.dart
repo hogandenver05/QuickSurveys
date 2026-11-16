@@ -19,6 +19,18 @@ class InMemoryResponseRepository implements ResponseRepository {
   }
 
   @override
+  Future<void> deleteResponsesForSurvey(
+      String surveyId,
+      String creatorId,
+      ) async {
+    _responses.removeWhere(
+          (response) =>
+      response.surveyId == surveyId &&
+          response.surveyCreatorId == creatorId,
+    );
+  }
+
+  @override
   Future<void> submitResponse(SurveyResponse response) async {
     _responses.add(response);
   }

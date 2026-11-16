@@ -33,6 +33,32 @@ class FirestoreResponseRepository implements ResponseRepository {
     return responses;
   }
 
+
+  @override
+  Future<void> deleteResponsesForSurvey(
+      String surveyId,
+      String creatorId,
+      ) async {
+    final snapshot = await _responsesCollection
+        .where('surveyId', isEqualTo: surveyId)
+        .where('surveyCreatorId', isEqualTo: creatorId)
+        .get();
+
+    // Delete in batches to stay below Firestore's 500-operation limit.
+    for (var i = 0; i < snapshot.docs.length; i += 450) {
+      final batch = _firestore.batch();
+
+      final documents = snapshot.docs.skip(i).take(450);
+
+      for (final doc in documents) {
+        batch.delete(doc.reference);
+      }
+
+      await batch.commit();
+    }
+  }
+
+
   @override
   Future<void> submitResponse(SurveyResponse response) async {
     await _responsesCollection.doc(response.id).set(response.toMap());
