@@ -209,21 +209,6 @@ class FirebaseAuthRepository implements AuthRepository {
     await _firebaseAuth.sendPasswordResetEmail(email: email.trim());
   }
 
-  @override
-  Future<void> reauthenticateWithPassword(String password) async {
-    final user = _firebaseAuth.currentUser;
-
-    if (user == null || user.email == null) {
-      throw Exception('No email/password user is signed in.');
-    }
-
-    final credential = EmailAuthProvider.credential(
-      email: user.email!,
-      password: password,
-    );
-
-    await user.reauthenticateWithCredential(credential);
-  }
 
   @override
   Future<void> reauthenticateWithGoogle() async {
@@ -249,6 +234,24 @@ class FirebaseAuthRepository implements AuthRepository {
     await user.reauthenticateWithCredential(credential);
   }
 
+
+  @override
+  Future<void> reauthenticateWithPassword(String password) async {
+    final user = _firebaseAuth.currentUser;
+
+    if (user == null || user.email == null) {
+      throw Exception('No email/password user is signed in.');
+    }
+
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: password,
+    );
+
+    await user.reauthenticateWithCredential(credential);
+  }
+
+
   @override
   Future<void> deleteAccount() async {
     final user = _firebaseAuth.currentUser;
@@ -257,14 +260,46 @@ class FirebaseAuthRepository implements AuthRepository {
       throw Exception('No user is currently signed in.');
     }
 
-    // Delete the Firestore profile first, while authenticated.
-    await _firestore.collection('users').doc(user.uid).delete();
+    // Preserve the profile in case Authentication deletion fails.
+    final savedProfile = _cachedUser;
 
-    // Delete the Firebase Authentication account.
-    await user.delete();
+    final profileReference = _firestore
+        .collection('users')
+        .doc(user.uid);
 
-    await _googleSignIn.signOut();
+    // Delete the Firestore profile while the user is authenticated.
+    await profileReference.delete();
+
+    try {
+      // Delete the Firebase Authentication account.
+      await user.delete();
+    } catch (error) {
+      // Restore the profile if the Authentication deletion failed.
+      if (savedProfile != null) {
+        try {
+          await profileReference.set(savedProfile.toMap());
+        } catch (restoreError) {
+          throw Exception(
+            'Account deletion failed, and the user profile '
+                'could not be restored. Original error: $error. '
+                'Restoration error: $restoreError',
+          );
+        }
+      }
+
+      rethrow;
+    }
+
+    // Google sign-out is best-effort cleanup. The Firebase account
+    // has already been deleted, so a Google sign-out error should
+    // not make the account deletion appear unsuccessful.
+    try {
+      await _googleSignIn.signOut();
+    } catch (_) {
+      // Ignore local Google sign-out errors.
+    }
   }
+
 
   @override
   Future<void> signOut() async {

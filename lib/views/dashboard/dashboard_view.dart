@@ -40,6 +40,7 @@ class _DashboardViewState extends State<DashboardView>
     _viewModel = DashboardViewModel(
       surveyRepository: widget.surveyRepository,
       authRepository: widget.authRepository,
+      responseRepository: widget.responseRepository,
     );
 
     _tabController = TabController(length: 2, vsync: this);
@@ -212,8 +213,8 @@ class _DashboardViewState extends State<DashboardView>
   }
 
 
+
   Future<void> _deleteAccount() async {
-    // First, ask the user to confirm permanent account deletion.
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (context) {
@@ -221,8 +222,9 @@ class _DashboardViewState extends State<DashboardView>
           title: const Text('Delete your account?'),
           content: const Text(
             'This will permanently delete your account, all surveys '
-                'you created, and their associated responses. '
-                'You will not be able to recover this data.\n\n'
+                'you created, their associated responses, and responses '
+                'you submitted to other users’ surveys. '
+                'This action cannot be undone.\n\n'
                 'Are you sure you want to continue?',
           ),
           actions: [
@@ -246,69 +248,61 @@ class _DashboardViewState extends State<DashboardView>
       return;
     }
 
-    try {
-      // Reauthenticate using the user's available sign-in provider.
-      if (widget.authRepository.supportsPasswordReauthentication) {
-        final passwordController = TextEditingController();
+    String? password;
 
-        final password = await showDialog<String>(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Confirm your password'),
-              content: TextField(
-                controller: passwordController,
-                obscureText: true,
-                autofocus: true,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
-                ),
-                onSubmitted: (value) {
-                  if (value.isNotEmpty) {
-                    Navigator.of(context).pop(value);
+    // Ask for the password if the account uses email/password.
+    if (_viewModel.requiresPasswordForAccountDeletion) {
+      final passwordController = TextEditingController();
+
+      password = await showDialog<String>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Confirm your password'),
+            content: TextField(
+              controller: passwordController,
+              obscureText: true,
+              autofocus: true,
+              decoration: const InputDecoration(
+                labelText: 'Password',
+                border: OutlineInputBorder(),
+              ),
+              onSubmitted: (value) {
+                if (value.isNotEmpty) {
+                  Navigator.of(context).pop(value);
+                }
+              },
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  if (passwordController.text.isNotEmpty) {
+                    Navigator.of(context).pop(
+                      passwordController.text,
+                    );
                   }
                 },
+                child: const Text('Confirm'),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
-                ),
-                FilledButton(
-                  onPressed: () {
-                    if (passwordController.text.isNotEmpty) {
-                      Navigator.of(context).pop(
-                        passwordController.text,
-                      );
-                    }
-                  },
-                  child: const Text('Confirm'),
-                ),
-              ],
-            );
-          },
-        );
+            ],
+          );
+        },
+      );
 
-        passwordController.dispose();
+      passwordController.dispose();
 
-        if (password == null || password.isEmpty || !mounted) {
-          return;
-        }
-
-        await widget.authRepository.reauthenticateWithPassword(password);
-      } else if (widget.authRepository.supportsGoogleReauthentication) {
-        await widget.authRepository.reauthenticateWithGoogle();
-      } else {
-        throw Exception(
-          'No supported reauthentication method is available.',
-        );
+      if (password == null || password.isEmpty || !mounted) {
+        return;
       }
+    }
 
-      if (!mounted) return;
-
-      // Delete surveys, responses, profile, and authentication account.
-      await _viewModel.deleteAccount();
+    try {
+      // The ViewModel handles reauthentication and account deletion.
+      await _viewModel.deleteAccount(password: password);
 
       if (!mounted) return;
 
@@ -320,13 +314,18 @@ class _DashboardViewState extends State<DashboardView>
     } catch (e) {
       if (!mounted) return;
 
+      final message = _viewModel.errorMessage ??
+          'Unable to delete account: $e';
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Unable to delete account: $e'),
+          content: Text(message),
         ),
       );
     }
   }
+
+
 
 
   @override
@@ -392,12 +391,11 @@ class _DashboardViewState extends State<DashboardView>
       ),
       floatingActionButton: _currentTabIndex == 0
           ? FloatingActionButton.extended(
-              onPressed: _createSurvey,
-              icon: const Icon(Icons.add),
-              label: const Text('Create Survey'),
-            )
+        onPressed: _createSurvey,
+        icon: const Icon(Icons.add),
+        label: const Text('Create Survey'),
+      )
           : null,
-
       body: AnimatedBuilder(
         animation: _viewModel,
         builder: (context, _) {
@@ -405,27 +403,18 @@ class _DashboardViewState extends State<DashboardView>
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (_viewModel.errorMessage != null) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  _viewModel.errorMessage!,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-              ),
-            );
-          }
-
           return TabBarView(
             controller: _tabController,
-            children: [_buildMySurveys(), _buildExploreSurveys()],
+            children: [
+              _buildMySurveys(),
+              _buildExploreSurveys(),
+            ],
           );
         },
       ),
     );
   }
+
 
   Widget _buildMySurveys() {
     if (_viewModel.surveys.isEmpty) {

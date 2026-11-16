@@ -1,4 +1,3 @@
-
 import '../models/survey_response.dart';
 
 abstract interface class ResponseRepository {
@@ -13,5 +12,6 @@ abstract interface class ResponseRepository {
       String surveyId,
       String creatorId,
       );
-}
 
+  Future<void> deleteResponsesByRespondent(String respondentId);
+}
