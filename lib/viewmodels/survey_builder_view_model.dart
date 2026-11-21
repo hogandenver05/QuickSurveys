@@ -54,16 +54,19 @@ class SurveyBuilderViewModel extends ChangeNotifier {
   bool get requireRespondentEmail => _requireRespondentEmail;
 
   void setTitle(String value) {
+    if (_title == value) return;
     _title = value;
     notifyListeners();
   }
 
   void setDescription(String value) {
+    if (_description == value) return;
     _description = value;
     notifyListeners();
   }
 
   void setAllowAnonymousResponses(bool value) {
+    if (_allowAnonymousResponses == value) return;
     if (value) {
       _allowAnonymousResponses = true;
       _requireRespondentName = false;
@@ -76,6 +79,7 @@ class SurveyBuilderViewModel extends ChangeNotifier {
   }
 
   void setRequireRespondentName(bool value) {
+    if (_requireRespondentName == value) return;
     if (value) {
       _requireRespondentName = true;
       _allowAnonymousResponses = false;
@@ -87,6 +91,7 @@ class SurveyBuilderViewModel extends ChangeNotifier {
   }
 
   void setRequireRespondentEmail(bool value) {
+    if (_requireRespondentEmail == value) return;
     if (value) {
       _requireRespondentEmail = true;
       _allowAnonymousResponses = false;
@@ -127,6 +132,43 @@ class SurveyBuilderViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Survey _createSurveyObject({required bool isPublished, String? shareCode}) {
+    final now = DateTime.now();
+    final trimmedTitle = _title.trim();
+    final trimmedDescription = _description.trim();
+    final questionsCopy = List<Question>.from(_questions);
+
+    final existing = _existingSurvey;
+    if (existing != null) {
+      return existing.copyWith(
+        title: trimmedTitle,
+        description: trimmedDescription,
+        questions: questionsCopy,
+        allowAnonymousResponses: _allowAnonymousResponses,
+        requireRespondentName: _requireRespondentName,
+        requireRespondentEmail: _requireRespondentEmail,
+        isPublished: isPublished,
+        updatedAt: now,
+        shareCode: shareCode ?? existing.shareCode,
+      );
+    }
+
+    return Survey(
+      id: now.microsecondsSinceEpoch.toString(),
+      title: trimmedTitle,
+      description: trimmedDescription,
+      isPublished: isPublished,
+      questions: questionsCopy,
+      allowAnonymousResponses: _allowAnonymousResponses,
+      requireRespondentName: _requireRespondentName,
+      requireRespondentEmail: _requireRespondentEmail,
+      createdBy: _currentUserId,
+      createdAt: now,
+      updatedAt: now,
+      shareCode: shareCode ?? '',
+    );
+  }
+
   Future<bool> save() async {
     if (_title.trim().isEmpty) {
       _errorMessage = 'Survey title is required.';
@@ -138,31 +180,7 @@ class SurveyBuilderViewModel extends ChangeNotifier {
 
     try {
       _errorMessage = null;
-      final now = DateTime.now();
-
-      final survey =
-          _existingSurvey?.copyWith(
-            title: _title.trim(),
-            description: _description.trim(),
-            questions: List<Question>.from(_questions),
-            allowAnonymousResponses: _allowAnonymousResponses,
-            requireRespondentName: _requireRespondentName,
-            requireRespondentEmail: _requireRespondentEmail,
-            updatedAt: now,
-          ) ??
-          Survey(
-            id: now.microsecondsSinceEpoch.toString(),
-            title: _title.trim(),
-            description: _description.trim(),
-            isPublished: false,
-            questions: List<Question>.from(_questions),
-            allowAnonymousResponses: _allowAnonymousResponses,
-            requireRespondentName: _requireRespondentName,
-            requireRespondentEmail: _requireRespondentEmail,
-            createdBy: _currentUserId,
-            createdAt: now,
-            updatedAt: now,
-          );
+      final survey = _createSurveyObject(isPublished: _existingSurvey?.isPublished ?? false);
 
       if (isEditing) {
         await _surveyRepository.updateSurvey(survey);
@@ -191,38 +209,16 @@ class SurveyBuilderViewModel extends ChangeNotifier {
 
     try {
       _errorMessage = null;
-      final now = DateTime.now();
 
-      final shareCode = _existingSurvey?.shareCode.isNotEmpty == true
-          ? _existingSurvey!.shareCode
+      final existing = _existingSurvey;
+      final shareCode = (existing != null && existing.shareCode.isNotEmpty)
+          ? existing.shareCode
           : SurveyCodeGenerator.generate();
 
-      final survey =
-          _existingSurvey?.copyWith(
-            title: _title.trim(),
-            description: _description.trim(),
-            questions: List<Question>.from(_questions),
-            allowAnonymousResponses: _allowAnonymousResponses,
-            requireRespondentName: _requireRespondentName,
-            requireRespondentEmail: _requireRespondentEmail,
-            isPublished: true,
-            updatedAt: now,
-            shareCode: shareCode,
-          ) ??
-          Survey(
-            id: now.microsecondsSinceEpoch.toString(),
-            title: _title.trim(),
-            description: _description.trim(),
-            isPublished: true,
-            questions: List<Question>.from(_questions),
-            allowAnonymousResponses: _allowAnonymousResponses,
-            requireRespondentName: _requireRespondentName,
-            requireRespondentEmail: _requireRespondentEmail,
-            createdBy: _currentUserId,
-            createdAt: now,
-            updatedAt: now,
-            shareCode: shareCode,
-          );
+      final survey = _createSurveyObject(
+        isPublished: true,
+        shareCode: shareCode,
+      );
 
       if (isEditing) {
         await _surveyRepository.updateSurvey(survey);
