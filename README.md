@@ -21,4 +21,9 @@
     From there you cand view the overview tab for all the questions and answers chosen with the question type that have multiple options in a bar graph form. 
     Meanwhile the Individual Response tab shows the individual responses of attempts, which shows rather the attempt was anomayous user or if the attempt shows the name and email of the user along with their answers for each question.
     All surveys, responses, and users being stored within an Firebase database and the app being avalible on Android, IOS, and Web Browser format.  
+
+    Update:
+        Optomized the survey_builder_view_model.dart file, survey_builder_view.dart,and added question_dialog.dart as a widget function. Changed the survey link sharing function to a survey code sharing function, added a utils directory, and survey_code_generator.dart file.
+    Added e-mail verication and password recovory, using said functionality included in Firebase.
+    
     
